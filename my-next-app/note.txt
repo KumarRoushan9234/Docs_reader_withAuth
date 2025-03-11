@@ -1,0 +1,34 @@
+Manual Creation => 
+npm install next@latest react@latest react-dom@latest
+
+Open package.json file and add the following scripts:
+
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  }
+}
+
+
+folder structure
+
+next-task-manager/
+│── public/            # Static assets (optional)
+│── src/  or client
+│   ├── pages/         # Next.js pages or app named folder (routes)
+│   │   ├── api/       # API routes (serverless functions)
+│   │   ├── index.tsx  # Home Page
+│   ├── components/    # Reusable components
+│   ├── styles/        # Global styles
+│   ├── utils/         # Helper functions (optional)
+│── .gitignore         # Git ignore file
+│── next.config.js     # Next.js config file
+│── tsconfig.json      # TypeScript config (if using TS)
+│── package.json       # Project metadata & dependencies
+│── README.md          # Project Documentation
+
+firebase auth
+portfolio website

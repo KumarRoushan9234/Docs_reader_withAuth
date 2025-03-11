@@ -1,0 +1,40 @@
+fastapi 
+uvicorn 
+pydantic 
+python-dotenv 
+llama-index 
+pinecone-client 
+requests
+groqcloud 
+pinecone-client 
+langchain 
+
+# fastapi 
+# uvicorn 
+# faiss-cpu 
+# llama-index 
+# pydantic 
+# numpy
+
+
+# uvicorn app.main:app --reload
+
+
+
+fastapi-backend/
+│── app/
+│   ├── main.py                 # Entry point
+│   ├── config.py               # Configuration settings
+│   ├── dependencies.py         # Dependency injection (e.g., loading models)
+│   ├── routes/
+│   │   ├── extract.py          # Handles text extraction and summarization
+│   │   ├── chat.py             # Handles chatbot interactions
+│   │   ├── quiz.py             # Generates quiz questions
+│   ├── services/
+│   │   ├── groq_llm.py         # Interacts with Groq Cloud LLM
+│   │   ├── vector_db.py        # Handles vector storage (e.g., Pinecone)
+│   ├── models/                 # Pydantic models for request/response
+│   ├── utils/                  # Helper functions
+│── requirements.txt            # Dependencies
+│── .env                        # API keys and environment variables
+│── README.md                   # Documentation
