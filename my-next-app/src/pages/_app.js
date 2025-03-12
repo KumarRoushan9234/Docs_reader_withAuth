@@ -5,6 +5,8 @@ import { Toaster } from "react-hot-toast";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
+const NO_NAVBAR_SIDEBAR = ["/login", "/signup"]; // Hide on these routes
+
 function AuthGuard({ children }) {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -19,13 +21,16 @@ function AuthGuard({ children }) {
 }
 
 export default function App({ Component, pageProps }) {
+  const router = useRouter();
+  const showLayout = !NO_NAVBAR_SIDEBAR.includes(router.pathname);
+
   return (
     <SessionProvider session={pageProps.session}>
       <div className="flex flex-col h-screen">
-        <Navbar />
+        {showLayout && <Navbar />}
         <div className="flex flex-1">
-          <Sidebar />
-          <main className="flex-1 p-6 bg-gray-100">
+          {showLayout && <Sidebar />}
+          <main className={`flex-1 ${showLayout ? "p-6 bg-gray-100" : ""}`}>
             <Toaster position="top-right" />
             {Component.auth ? (
               <AuthGuard>
