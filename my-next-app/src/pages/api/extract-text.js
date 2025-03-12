@@ -14,6 +14,16 @@ export const config = {
 };
 
 export default async function handler(req, res) {
+  // ✅ CORS Headers to fix "Network Error"
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  // ✅ Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ success: false, message: "Method not allowed" });
   }
@@ -48,9 +58,8 @@ export default async function handler(req, res) {
           return resolve(res.status(404).json({ success: false, message: "User not found" }));
         }
 
-        if (!user.Docs) {
-          user.Docs = new Map(); // Ensure Docs exists as a Map
-        }
+        // ✅ Clear previous documents before saving new ones
+        user.Docs = new Map();
 
         for (let i = 0; i < uploadedFiles.length; i++) {
           const file = uploadedFiles[i];
@@ -78,7 +87,7 @@ export default async function handler(req, res) {
           extractedTexts[i + 1] = text;
           console.log(`✅ Extracted from ${file.originalFilename || file.name}:`, text);
 
-          // ✅ Store in MongoDB as { "1": "text1", "2": "text2" }
+          // ✅ Store only the new documents
           user.Docs.set(`${i + 1}`, text);
         }
 
