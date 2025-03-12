@@ -1,26 +1,17 @@
-import { useState } from "react";
 import { signIn } from "next-auth/react";
 
-export default function Login() {
-  const [form, setForm] = useState({ email: "", password: "" });
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const result = await signIn("credentials", {
-      redirect: false,
-      email: form.email,
-      password: form.password,
-    });
-
-    if (result.error) alert("Login failed");
-    else alert("Login successful");
-  }
-
+export default function LoginPage() {
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="email" placeholder="Email" onChange={(e) => setForm({ ...form, email: e.target.value })} />
-      <input type="password" placeholder="Password" onChange={(e) => setForm({ ...form, password: e.target.value })} />
-      <button type="submit">Login</button>
-    </form>
+    <div className="flex justify-center items-center h-screen bg-gray-100">
+      <div className="bg-white shadow-lg p-8 rounded-md w-96 text-center">
+        <h2 className="text-2xl font-bold mb-4">Login</h2>
+        <button
+          onClick={() => signIn("google")} // Change this to your provider
+          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+        >
+          Sign in with Google
+        </button>
+      </div>
+    </div>
   );
 }

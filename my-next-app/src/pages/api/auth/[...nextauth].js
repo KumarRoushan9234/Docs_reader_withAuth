@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { connectToDatabase } from "../../../lib/mongodb";
+import connectDB from "../../../lib/mongodb";  // ✅ Corrected Import
 import User from "../../../models/User";
 import bcrypt from "bcryptjs";
 
@@ -13,7 +13,8 @@ export default NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        await connectToDatabase();
+        await connectDB();  // ✅ Ensure DB is connected
+
         const user = await User.findOne({ email: credentials.email });
         if (!user) throw new Error("Invalid email or password");
 
@@ -30,5 +31,14 @@ export default NextAuth({
       session.user.id = token.sub;
       return session;
     },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+  },
+  pages: {
+    signIn: "/login",  // ✅ Redirect to login page if not authenticated
   },
 });
