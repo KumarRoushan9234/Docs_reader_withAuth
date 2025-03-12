@@ -1,20 +1,28 @@
 import { IncomingForm } from "formidable";
-import fs from "fs/promises"; // Use async fs operations
+import fs from "fs/promises";
 import path from "path";
 import pdfParse from "pdf-parse";
 import mammoth from "mammoth";
 import textract from "textract";
+import connectDB from "@/lib/mongodb";
+import User from "@/models/User";
+import { getSession } from "next-auth/react";
 
 // ✅ Disable Next.js bodyParser for formidable
 export const config = {
-  api: {
-    bodyParser: false,
-  },
+  api: { bodyParser: false },
 };
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ success: false, message: "Method not allowed" });
+  }
+
+  await connectDB();
+  const session = await getSession({ req });
+
+  if (!session) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 
   const form = new IncomingForm({ multiples: true, keepExtensions: true });
@@ -31,13 +39,21 @@ export default async function handler(req, res) {
           return resolve(res.status(400).json({ success: false, message: "No file uploaded" }));
         }
 
-        // ✅ Ensure files are treated as an array
         const uploadedFiles = Array.isArray(files.file) ? files.file : [files.file];
-
         let extractedTexts = {};
 
-        // ✅ Process each file independently
-        for (const file of uploadedFiles) {
+        const user = await User.findOne({ email: session.user.email });
+
+        if (!user) {
+          return resolve(res.status(404).json({ success: false, message: "User not found" }));
+        }
+
+        if (!user.Docs) {
+          user.Docs = new Map(); // Ensure Docs exists as a Map
+        }
+
+        for (let i = 0; i < uploadedFiles.length; i++) {
+          const file = uploadedFiles[i];
           const filePath = file.filepath || file.path;
           const fileExt = path.extname(file.originalFilename || file.name).toLowerCase();
           let text = "";
@@ -59,13 +75,18 @@ export default async function handler(req, res) {
             text = "Unsupported file type";
           }
 
-          extractedTexts[file.originalFilename || file.name] = text;
+          extractedTexts[i + 1] = text;
           console.log(`✅ Extracted from ${file.originalFilename || file.name}:`, text);
 
-          // ✅ Cleanup only after processing all files
+          // ✅ Store in MongoDB as { "1": "text1", "2": "text2" }
+          user.Docs.set(`${i + 1}`, text);
         }
 
-        return resolve(res.status(200).json({ success: true, message: "Files processed", data: extractedTexts }));
+        await user.save();
+
+        return resolve(
+          res.status(200).json({ success: true, message: "Files uploaded and saved", data: extractedTexts })
+        );
       } catch (error) {
         console.error("❌ Error processing files:", error);
         return resolve(res.status(500).json({ success: false, message: "Error processing files" }));

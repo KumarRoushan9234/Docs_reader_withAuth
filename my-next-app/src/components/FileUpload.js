@@ -41,41 +41,33 @@ export default function FileUpload() {
     setFiles(files.filter((_, i) => i !== index));
   };
 
-  // Upload & Extract Text
   const handleUpload = async () => {
     if (files.length === 0) return toast.error("Please upload at least one file.");
     setLoading(true);
+    toast.loading("Processing files...");
 
     const formData = new FormData();
     files.forEach((file) => formData.append("file", file));
 
     try {
-      // Step 1: Extract text from documents
-      toast.loading("Extracting text from files...");
       const extractResponse = await axios.post("/api/extract-text", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
       const extractedData = extractResponse.data.data;
       setExtractedText(extractedData);
-      console.log("✅ Extracted Text:", extractedData);
       toast.dismiss();
       toast.success("Text extracted successfully!");
 
-      // Step 2: Send extracted text to LLM for summary & key points
-      toast.loading("Generating summary & key points...");
       const llmResponse = await axios.post("http://127.0.0.1:8000/extract", {
         documents: extractedData,
       });
 
       setSummary(llmResponse.data.summary);
       setKeyPoints(llmResponse.data["key points"]);
-      console.log("✅ LLM Response:", llmResponse.data);
-      toast.dismiss();
       toast.success("Summary & key points generated!");
     } catch (error) {
       console.error("❌ Error:", error);
-      toast.dismiss();
       toast.error("Failed to process files. Try again!");
     } finally {
       setLoading(false);
@@ -88,7 +80,6 @@ export default function FileUpload() {
         <FaUpload className="text-blue-500" /> Upload Files
       </h2>
 
-      {/* Drag & Drop / Click Upload */}
       <div
         onClick={() => fileInputRef.current.click()}
         onDrop={handleDrop}
@@ -102,7 +93,6 @@ export default function FileUpload() {
         <input type="file" multiple ref={fileInputRef} onChange={handleFileChange} className="hidden" />
       </div>
 
-      {/* File List */}
       {files.length > 0 && (
         <div className="mt-4 p-3 bg-gray-100 rounded shadow">
           <h3 className="text-lg font-medium mb-2">Files to Upload:</h3>
@@ -120,7 +110,6 @@ export default function FileUpload() {
         </div>
       )}
 
-      {/* Upload Button */}
       <button
         onClick={handleUpload}
         disabled={files.length === 0 || loading}
@@ -131,7 +120,6 @@ export default function FileUpload() {
         {loading ? <><FaSpinner className="animate-spin" /> Processing...</> : <><FaUpload /> Upload & Extract</>}
       </button>
 
-      {/* Display Extracted Text, Summary, and Key Points */}
       {summary && keyPoints && (
         <div className="mt-6 p-4 bg-gray-100 border rounded shadow">
           <h3 className="text-lg font-medium mb-2">Summary:</h3>
