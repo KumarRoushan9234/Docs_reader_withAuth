@@ -123,6 +123,7 @@ export default function FileUpload() {
 
   return (
     <div className="p-6 mx-auto max-w-2xl bg-white rounded-lg shadow-lg">
+      
       <h2 className="text-2xl font-semibold mb-4 text-center flex items-center justify-center gap-2">
         <FaUpload className="text-blue-500" /> Upload Files
       </h2>
@@ -167,13 +168,13 @@ export default function FileUpload() {
         {loading ? <><FaSpinner className="animate-spin" /> Processing...</> : <><FaUpload /> Upload & Extract</>}
       </button>
 
-      {Object.values(filePreviews).map((preview, index) => (
+      {/* {Object.values(filePreviews).map((preview, index) => (
         <div key={index} className="mt-6 p-4 bg-gray-100 border rounded">
           {preview.type === "pdf" && <Document file={preview.url}><Page pageNumber={1} /></Document>}
           {preview.type === "docx" && <p>{preview.text}</p>}
           {preview.type === "text" && <p>{preview.text}</p>}
         </div>
-      ))}
+      ))} */}
     </div>
   );
 }
