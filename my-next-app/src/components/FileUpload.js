@@ -53,37 +53,40 @@ export default function FileUpload() {
       toast.error("Please upload at least one file.");
       return;
     }
-
+  
     setLoading(true);
     toast.loading("Processing files...");
     console.log("🚀 Uploading files:", files);
-
+  
     const formData = new FormData();
     files.forEach((file) => formData.append("file", file));
-
+  
     try {
       // Step 1: Upload files to API and extract text
       console.log("📤 Sending files to API for extraction...");
       const extractResponse = await axios.post("/api/extract-text", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
+  
       console.log("✅ Extracted response:", extractResponse.data.data);
       const extractedData = extractResponse.data.data;
-
+  
       if (!extractedData || Object.keys(extractedData).length === 0) {
         throw new Error("No extracted text found.");
       }
-
+  
       toast.dismiss();
       toast.success("Text extracted successfully!");
-
-      // Step 2: Call Zustand's `extractText` function to process the extracted text
-      console.log("🔄 Calling extractText() from Zustand store...");
-      await extractText(extractedData);
-
-      console.log("🎯 Extraction complete. Summary & Key Points updated in store.");
-      toast.success("Summary & key points generated!");
+  
+      // Step 2: Send extracted text to FastAPI `/extract` endpoint
+      console.log("🔄 Sending extracted text to /extract API...");
+      const extractTextResponse = await extractText(extractedData);
+  
+      if (extractTextResponse) {
+        console.log("🎯 Extraction complete. Summary & Key Points updated in store.");
+        toast.success("Summary & key points generated!");
+      }
+  
     } catch (error) {
       console.error("❌ Error during extraction:", error);
       toast.error("Failed to process files. Try again!");
@@ -91,6 +94,7 @@ export default function FileUpload() {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="p-6 mx-auto max-w-2xl bg-white rounded-lg shadow-lg">

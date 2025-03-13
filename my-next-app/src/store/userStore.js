@@ -5,7 +5,7 @@ const API_BASE_URL = "http://localhost:8000";
 
 const useUserStore = create((set, get) => ({
   user: null,
-  availableModels: [],
+  availableModels: {},
   selectedModel: null,
 
   // Extracted Docs
@@ -40,20 +40,6 @@ const useUserStore = create((set, get) => ({
     }
   },
 
-  fetchUserDetails: async () => {
-    const user = get().user;
-    if (!user) return console.error("No user found");
-
-    try {
-      const response = await axios.get(`${API_BASE_URL}/user/${user.id}`);
-      set({ user: response.data.user_details });
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching user details:", error);
-      throw error;
-    }
-  },
-
   fetchModels: async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/models`);
@@ -72,7 +58,7 @@ const useUserStore = create((set, get) => ({
 
     try {
       const response = await axios.post(`${API_BASE_URL}/change-model`, {
-        user_id: user.id,
+        user_id: user.user_id,
         model_id,
       });
 
@@ -88,29 +74,12 @@ const useUserStore = create((set, get) => ({
     }
   },
 
-  deleteModel: async () => {
-    const user = get().user;
-    if (!user) return console.error("No user found");
-
-    try {
-      const response = await axios.delete(`${API_BASE_URL}/delete-model`, {
-        data: { user_id: user.id },
-      });
-
-      set({ selectedModel: null });
-      return response.data;
-    } catch (error) {
-      console.error("Error deleting model:", error);
-      throw error;
-    }
-  },
-
   extractText: async (docs) => {
     const user = get().user;
     if (!user) return console.error("No user found");
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/extract`, { user_id: user.id, docs });
+      const response = await axios.post(`${API_BASE_URL}/extract`, { user_id: user.user_id, docs });
 
       set({
         extractedDocs: docs,
@@ -125,39 +94,41 @@ const useUserStore = create((set, get) => ({
     }
   },
 
-  chatWithDocuments: async (query) => {
-    const user = get().user;
-    if (!user) return console.error("No user found");
-
-    try {
-      const response = await axios.post(`${API_BASE_URL}/chat`, { user_id: user.id, query });
-
-      const chatEntry = { question: query, answer: response.data.response };
-      set((state) => ({
-        chatHistory: [...state.chatHistory, chatEntry],
-      }));
-
-      return response.data.response;
-    } catch (error) {
-      console.error("Error chatting with documents:", error);
-      throw error;
-    }
-  },
-
-  generateQuiz: async (num_questions = 10) => {
+  generateQuiz: async (numQuestions, userMessage) => {
     const user = get().user;
     if (!user) return console.error("No user found");
 
     try {
       const response = await axios.post(`${API_BASE_URL}/quiz`, {
-        user_id: user.id,
-        num_questions,
+        user_id: user.user_id,
+        num_questions: numQuestions,
+        user_message: userMessage,
       });
 
-      set({ quizData: JSON.parse(response.data.quiz) });
-      return response.data.quiz;
+      set({ quizData: response.data.questions });
+      return response.data;
     } catch (error) {
       console.error("Error generating quiz:", error);
+      throw error;
+    }
+  },
+
+  chatWithDocuments: async (query) => {
+    const user = get().user;
+    if (!user) return console.error("No user found");
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/chat`, { user_id: user.user_id, query });
+
+      const chatEntry = { question: query, answer: response.data.response };
+
+      set((state) => ({
+        chatHistory: [...state.chatHistory, chatEntry],
+      }));
+
+      return response.data;
+    } catch (error) {
+      console.error("Error in chat:", error);
       throw error;
     }
   },
