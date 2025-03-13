@@ -2,20 +2,42 @@
 
 import { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
-import { FaUpload, FaFileAlt, FaTrashAlt, FaSpinner } from "react-icons/fa";
-import useUserStore from "@/store/userStore"; // Import Zustand store
+import {
+  FaUpload,
+  FaFileAlt,
+  FaTrashAlt,
+  FaSpinner,
+  FaSearchPlus,
+  FaSearchMinus,
+  FaArrowLeft,
+  FaArrowRight,
+  FaDownload,
+  FaExpand,
+  FaCompress,
+  FaBookmark,
+  FaPrint,
+  FaRegLightbulb,
+} from "react-icons/fa";
+import useUserStore from "@/store/userStore";
 import axios from "axios";
 
 export default function FileUpload() {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [docs, setDocs] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
 
-  // Zustand Store
-  const { UpdateDocs, summary, keyPoints, extractedDocs } = useUserStore();
-
+  const { UpdateDocs } = useUserStore();
   const fileInputRef = useRef(null);
+  const viewerRef = useRef(null);
 
-  // Handle pasting files
   useEffect(() => {
     const handlePaste = (event) => {
       if (event.clipboardData.files.length > 0) {
@@ -27,13 +49,79 @@ export default function FileUpload() {
     return () => window.removeEventListener("paste", handlePaste);
   }, []);
 
-  // Handle file selection
+  useEffect(() => {
+    if (searchTerm.trim() && docs[currentPage]) {
+      const text = docs[currentPage].toLowerCase();
+      const term = searchTerm.toLowerCase();
+      
+      const results = [];
+      let index = 0;
+      
+      while (index !== -1) {
+        index = text.indexOf(term, index);
+        if (index !== -1) {
+          results.push(index);
+          index += term.length;
+        }
+      }
+      
+      setSearchResults(results);
+      setCurrentSearchIndex(0);
+      
+      if (results.length > 0) {
+        highlightSearchResults();
+      }
+    } else {
+      setSearchResults([]);
+    }
+  }, [searchTerm, currentPage, docs]);
+
+  const highlightSearchResults = () => {
+    if (viewerRef.current && searchResults.length > 0) {
+      const textContent = docs[currentPage];
+      const term = searchTerm;
+      
+      // Reset highlighted content
+      let highlightedContent = textContent;
+      
+      // Prepare highlighted content
+      const parts = textContent.split(new RegExp(`(${term})`, 'gi'));
+      highlightedContent = parts.map((part, i) => 
+        part.toLowerCase() === term.toLowerCase() 
+          ? `<mark class="bg-yellow-300 ${i === currentSearchIndex * 2 + 1 ? 'bg-yellow-500' : ''}">${part}</mark>` 
+          : part
+      ).join('');
+      
+      // Update the content
+      if (viewerRef.current) {
+        viewerRef.current.innerHTML = highlightedContent;
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (searchResults.length > 0) {
+      highlightSearchResults();
+    }
+  }, [currentSearchIndex, searchResults]);
+
+  const handleNextSearchResult = () => {
+    if (searchResults.length > 0) {
+      setCurrentSearchIndex((prev) => (prev + 1) % searchResults.length);
+    }
+  };
+
+  const handlePrevSearchResult = () => {
+    if (searchResults.length > 0) {
+      setCurrentSearchIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length);
+    }
+  };
+
   const handleFileChange = (event) => {
     const newFiles = Array.from(event.target.files);
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
   };
 
-  // Handle drag and drop
   const handleDrop = (event) => {
     event.preventDefault();
     const droppedFiles = Array.from(event.dataTransfer.files);
@@ -42,51 +130,96 @@ export default function FileUpload() {
 
   const handleDragOver = (event) => event.preventDefault();
 
-  // Remove selected file
   const handleRemoveFile = (index) => {
     setFiles(files.filter((_, i) => i !== index));
   };
 
-  // Handle file upload and text extraction
+  const toggleFullscreen = () => {
+    setFullscreen(!fullscreen);
+  };
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
+  const toggleBookmark = () => {
+    if (bookmarks.includes(currentPage)) {
+      setBookmarks(bookmarks.filter(page => page !== currentPage));
+      toast.success("Bookmark removed");
+    } else {
+      setBookmarks([...bookmarks, currentPage]);
+      toast.success("Bookmark added");
+    }
+  };
+
+  const handlePrint = () => {
+    const printContent = docs[currentPage];
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print Document</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            .content { white-space: pre-wrap; }
+          </style>
+        </head>
+        <body>
+          <h1>Page ${currentPage}</h1>
+          <div class="content">${printContent}</div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  const handleDownload = () => {
+    const content = docs[currentPage];
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `document-page-${currentPage}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handleUpload = async () => {
     if (files.length === 0) {
       toast.error("Please upload at least one file.");
       return;
     }
-  
+
     setLoading(true);
     toast.loading("Processing files...");
-    console.log("🚀 Uploading files:", files);
-  
+
     const formData = new FormData();
     files.forEach((file) => formData.append("file", file));
-  
+
     try {
-      // Step 1: Upload files to API and extract text
-      console.log("📤 Sending files to API for extraction...");
       const extractResponse = await axios.post("/api/extract-text", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-  
-      console.log("✅ Extracted response:", extractResponse.data.data);
+
       const extractedData = extractResponse.data.data;
-  
+
       if (!extractedData || Object.keys(extractedData).length === 0) {
         throw new Error("No extracted text found.");
       }
-  
+
       toast.dismiss();
       toast.success("Text extracted successfully!");
-  
-      // Step 2: Send extracted text to FastAPI `/extract` endpoint
-      console.log("🔄 Sending extracted text to /extract API...");
       const UpdateDocsResponse = await UpdateDocs(extractedData);
-  
+
       if (UpdateDocsResponse) {
-        console.log("🎯 Extraction complete. Summary & Key Points updated in store.");
-        toast.success("Summary & key points generated!");
+        toast.success("Documents processed successfully!");
       }
-  
+
+      setDocs(extractedData);
+      setCurrentPage(1);
     } catch (error) {
       console.error("❌ Error during extraction:", error);
       toast.error("Failed to process files. Try again!");
@@ -94,79 +227,167 @@ export default function FileUpload() {
       setLoading(false);
     }
   };
-  
+
+  const totalPages = Object.keys(docs).length;
+  const currentPageText = docs[currentPage];
 
   return (
-    <div className="p-6 mx-auto max-w-2xl bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold mb-4 text-center flex items-center justify-center gap-2">
-        <FaUpload className="text-blue-500" /> Upload Files
-      </h2>
+    <div className="p-6 mx-auto max-w-5xl bg-white rounded-lg shadow-lg">
+      {/* Document Viewer */}
+      {totalPages > 0 && (
+        <div className={`${fullscreen ? "fixed inset-0 z-50 p-4" : "mb-6 p-4"} ${darkMode ? "bg-gray-900" : "bg-gray-100"} border rounded shadow transition-all duration-300`}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className={`text-lg font-medium ${darkMode ? "text-white" : "text-gray-800"}`}>
+              Document Viewer
+            </h3>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleDarkMode}
+                className={`p-2 rounded ${darkMode ? "bg-gray-700 text-yellow-400" : "bg-gray-200 text-gray-700"}`}
+                title={darkMode ? "Light Mode" : "Dark Mode"}
+              >
+                <FaRegLightbulb />
+              </button>
+              
+              <button
+                onClick={toggleFullscreen}
+                className={`p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-gray-200 text-gray-700"}`}
+                title={fullscreen ? "Exit Fullscreen" : "Fullscreen"}
+              >
+                {fullscreen ? <FaCompress /> : <FaExpand />}
+              </button>
+            </div>
+          </div>
 
-      {/* Drag and Drop or Click to Upload */}
-      <div
-        onClick={() => fileInputRef.current.click()}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        className="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-gray-300 p-6 rounded-lg hover:border-blue-500 transition-all"
-      >
-        <FaUpload className="text-gray-500 text-4xl" />
-        <span className="text-gray-500 mt-2 text-center">
-          Drag & Drop files here, <strong>Click</strong> to select, or <strong>Paste (Ctrl+V)</strong>
-        </span>
-        <input type="file" multiple ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-      </div>
-
-      {/* Display Selected Files */}
-      {files.length > 0 && (
-        <div className="mt-4 p-3 bg-gray-100 rounded shadow">
-          <h3 className="text-lg font-medium mb-2">Files to Upload:</h3>
-          <div className="flex gap-2 overflow-x-auto whitespace-nowrap p-2">
-            {files.map((file, index) => (
-              <div key={index} className="flex items-center gap-2 bg-white px-3 py-2 rounded shadow border">
-                <FaFileAlt className="text-green-500" />
-                <span className="text-sm truncate max-w-[150px]">{file.name}</span>
-                <button onClick={() => handleRemoveFile(index)} className="text-red-500 hover:text-red-700">
-                  <FaTrashAlt />
+          {/* Search Bar */}
+          <div className="flex items-center gap-2 mb-4">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search in document..."
+              className={`flex-1 p-2 rounded border ${darkMode ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-800 border-gray-300"}`}
+            />
+            
+            {searchResults.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                  {currentSearchIndex + 1}/{searchResults.length}
+                </span>
+                <button
+                  onClick={handlePrevSearchResult}
+                  className={`p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-gray-200 text-gray-700"}`}
+                >
+                  <FaArrowLeft className="text-xs" />
+                </button>
+                <button
+                  onClick={handleNextSearchResult}
+                  className={`p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-gray-200 text-gray-700"}`}
+                >
+                  <FaArrowRight className="text-xs" />
                 </button>
               </div>
-            ))}
+            )}
           </div>
-        </div>
-      )}
 
-      {/* Upload Button */}
-      <button
-        onClick={handleUpload}
-        disabled={files.length === 0 || loading}
-        className={`w-full px-4 py-2 rounded text-white mt-4 flex items-center justify-center gap-2 ${
-          files.length === 0 || loading ? "bg-gray-500" : "bg-blue-600 hover:bg-blue-700"
-        }`}
-      >
-        {loading ? <><FaSpinner className="animate-spin" /> Processing...</> : <><FaUpload /> Upload & Extract</>}
-      </button>
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center gap-2">
+              <span className={`font-semibold ${darkMode ? "text-white" : "text-gray-800"}`}>
+                Page {currentPage} / {totalPages}
+              </span>
+              {bookmarks.includes(currentPage) && (
+                <span className="text-yellow-500">
+                  <FaBookmark />
+                </span>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleBookmark}
+                className={`p-2 rounded ${darkMode ? "bg-gray-700" : "bg-gray-200"} ${bookmarks.includes(currentPage) ? "text-yellow-500" : darkMode ? "text-white" : "text-gray-700"}`}
+                title={bookmarks.includes(currentPage) ? "Remove Bookmark" : "Add Bookmark"}
+              >
+                <FaBookmark />
+              </button>
+              
+              <button
+                onClick={handleDownload}
+                className={`p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-gray-200 text-gray-700"}`}
+                title="Download Page"
+              >
+                <FaDownload />
+              </button>
+              
+              <button
+                onClick={handlePrint}
+                className={`p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-gray-200 text-gray-700"}`}
+                title="Print Page"
+              >
+                <FaPrint />
+              </button>
+            </div>
+          </div>
 
-      {/* Display Summary & Key Points */}
-      {summary && keyPoints && (
-        <div className="mt-6 p-4 bg-gray-100 border rounded shadow">
-          <h3 className="text-lg font-medium mb-2">Summary:</h3>
-          <p className="text-gray-700">{summary}</p>
+          <div
+            className={`relative ${darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"} p-6 border rounded shadow overflow-auto transition-all duration-300`}
+            style={{ 
+              height: fullscreen ? "calc(100vh - 200px)" : "500px", 
+              transform: `scale(${zoomLevel})`,
+              transformOrigin: "top left"
+            }}
+          >
+            <div 
+              ref={viewerRef}
+              className="text-base whitespace-pre-wrap"
+              dangerouslySetInnerHTML={{ __html: searchTerm ? '' : currentPageText }}
+            >
+              {searchTerm ? null : currentPageText}
+            </div>
+          </div>
 
-          <h3 className="text-lg font-medium mt-4 mb-2">Key Points:</h3>
-          <ul className="list-disc list-inside text-gray-700">
-            {keyPoints.map((point, index) => (
-              <li key={index}>{point}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+          <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-3 py-2 rounded flex items-center gap-2 ${
+                currentPage === 1 ? "opacity-50" : ""
+              } ${darkMode ? "bg-blue-600 text-white" : "bg-blue-500 text-white"}`}
+            >
+              <FaArrowLeft /> Previous
+            </button>
 
-      {/* Debugging Logs */}
-      <div className="mt-4 p-3 text-xs text-gray-600 bg-gray-200 rounded">
-        <strong>Debug Logs:</strong>
-        <pre className="overflow-x-auto text-gray-800">
-          {JSON.stringify({ extractedDocs, summary, keyPoints }, null, 2)}
-        </pre>
-      </div>
-    </div>
-  );
-}
+            <div className="flex gap-2">
+              {bookmarks.length > 0 && (
+                <select 
+                  onChange={(e) => setCurrentPage(Number(e.target.value))}
+                  value={bookmarks.includes(currentPage) ? currentPage : ""}
+                  className={`px-3 py-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-gray-800"}`}
+                >
+                  <option value="" disabled>Bookmarks</option>
+                  {bookmarks.map(page => (
+                    <option key={page} value={page}>Page {page}</option>
+                  ))}
+                </select>
+              )}
+
+              <button
+                onClick={() => setZoomLevel((prev) => Math.min(prev + 0.1, 2))}
+                className={`px-3 py-2 rounded flex items-center gap-2 ${darkMode ? "bg-gray-700 text-white" : "bg-gray-200 text-gray-800"}`}
+              >
+                <FaSearchPlus /> Zoom In
+              </button>
+              
+              <button
+                onClick={() => setZoomLevel(1)}
+                className={`px-3 py-2 rounded flex items-center gap-2 ${darkMode ? "bg-gray-700 text-white" : "bg-gray-200 text-gray-800"}`}
+              >
+                100%
+              </button>
+              
+              <button
+                onClick={() => setZoomLevel((prev) => Math.max(prev - 0.1, 0.5))}
+                className={`px-3 py-2 rounded flex items-center gap-2 ${darkMode ? "bg-gray-700 text-white" : "bg-gray-200 text-gray-800"}`}
+              >
+                <FaSearchMinus />
