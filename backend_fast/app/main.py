@@ -57,8 +57,12 @@ async def welcome():
 
 @app.get("/models")
 async def list_available_models():
-    """Lists all available models."""
-    return {"success": True, "available_models": list(AVAILABLE_MODELS.keys()), "selected_model": selected_model_id}
+    """Lists all available models with details."""
+    return {
+        "success": True,
+        "available_models": AVAILABLE_MODELS,  # Returning detailed model info
+        "selected_model": selected_model_id
+    }
 
 #---------------------------------------------------
 @app.post("/change-model")
