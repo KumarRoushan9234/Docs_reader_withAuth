@@ -58,7 +58,7 @@ const useUserStore = create((set, get) => ({
 
     try {
       const response = await axios.post(`${API_BASE_URL}/change-model`, {
-        user_id: user.user_id,
+        user_id: user.id,
         model_id,
       });
 
@@ -76,23 +76,37 @@ const useUserStore = create((set, get) => ({
 
   extractText: async (docs) => {
     const user = get().user;
-    if (!user) return console.error("No user found");
+    if (!user) return console.error("🚨 No user found!");
+  
+    console.log("user : ",user)
+    console.log("user_id data type : ",typeof(user.id));
 
+    console.log("📤 Sending extracted text to /extract API...", { 
+      user_id: user.id, 
+      docs 
+    });
+  
     try {
-      const response = await axios.post(`${API_BASE_URL}/extract`, { user_id: user.user_id, docs });
-
+      const response = await axios.post(`${API_BASE_URL}/extract`, {
+        user_id: String(user.id), // Ensure it's a string
+        docs: docs || {} // Ensure docs is an object
+      });
+  
+      console.log("✅ Extract API response:", response.data);
+  
       set({
         extractedDocs: docs,
         summary: response.data.summary,
         keyPoints: response.data.key_points,
       });
-
+  
       return response.data;
     } catch (error) {
-      console.error("Error extracting text:", error);
+      console.error("❌ Error extracting text:", error.response?.data || error);
       throw error;
     }
   },
+  
 
   generateQuiz: async (numQuestions, userMessage) => {
     const user = get().user;
@@ -100,7 +114,7 @@ const useUserStore = create((set, get) => ({
 
     try {
       const response = await axios.post(`${API_BASE_URL}/quiz`, {
-        user_id: user.user_id,
+        user_id: user.id,
         num_questions: numQuestions,
         user_message: userMessage,
       });
@@ -118,7 +132,7 @@ const useUserStore = create((set, get) => ({
     if (!user) return console.error("No user found");
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/chat`, { user_id: user.user_id, query });
+      const response = await axios.post(`${API_BASE_URL}/chat`, { user_id: user.id, query });
 
       const chatEntry = { question: query, answer: response.data.response };
 
