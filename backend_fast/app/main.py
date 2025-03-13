@@ -232,7 +232,7 @@ class QuizRequest(BaseModel):
 
 @app.post("/quiz", response_model=QuizResponse)
 async def generate_quiz(request: QuizRequest):
-    """Generates a structured multiple-choice quiz based on stored documents and user request, then saves it in MongoDB."""
+    """Generates a structured multiple-choice quiz based on stored documents and user request, then saves in MongoDB."""
     try:
         user_id_obj = ObjectId(request.user_id)
 
