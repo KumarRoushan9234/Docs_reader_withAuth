@@ -1,10 +1,12 @@
 import os
+import json
+from datetime import datetime
 from bson import ObjectId
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from dotenv import load_dotenv
-from typing import Dict
+from typing import List, Optional,Dict
+from pydantic import BaseModel, Field
 
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -159,55 +161,144 @@ async def extract_text(data: ExtractRequest):
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat_with_documents(request: ChatRequest):
-    """Chat with previously stored documents and save chat history in MongoDB using `user_id`."""
-    documents = extracted_docs_store.get(request.user_id)
-    if not documents:
-        raise HTTPException(status_code=400, detail="No documents available. Extract documents first.")
+    """Chat with stored documents and save chat history in MongoDB."""
+    try:
+        user_id_obj = ObjectId(request.user_id)
 
-    extracted_text = "\n".join(documents.values())
+        # Fetch user data
+        user = await users_collection.find_one({"_id": user_id_obj})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found. Please register first.")
 
-    # Chat Prompt
-    messages = [
-        SystemMessage(
-            "You are Dwight Schrute from 'The Office.' You must only answer based on the provided document. "
-            "If the document does not contain relevant information, clearly say: "
-            "'I cannot answer this as it is not covered in the provided text.' "
-            "Your responses should be logical, factual, and slightly condescending."
-        ),
-        HumanMessage(f"Document: {extracted_text}\n\nUser Query: {request.query}")
-    ]
-    
-    response = model.invoke(messages).content
+        documents = user.get("Docs", {})
+        if not documents:
+            raise HTTPException(status_code=400, detail="No documents found. Upload documents first.")
 
-    # Store chat in MongoDB
-    chat_entry = {"question": request.query, "answer": response}
-    await users_collection.update_one(
-        {"_id": ObjectId(request.user_id)},
-        {"$push": {"chatHistory": chat_entry}},
-        upsert=True
-    )
+        extracted_text = "\n".join(documents.values())
 
-    return ChatResponse(success=True, response=response)
+        # Chat Prompt
+        messages = [
+            SystemMessage(
+                "You are Dwight Schrute from 'The Office.' You must only answer based on the provided document. "
+                "If the document does not contain relevant information, clearly say: "
+                "'I cannot answer this as it is not covered in the provided text.' "
+                "Your responses should be logical, factual, and slightly condescending."
+            ),
+            HumanMessage(f"Document: {extracted_text}\n\nUser Query: {request.query}")
+        ]
+
+        response = model.invoke(messages).content
+
+        # Store chat in MongoDB
+        chat_entry = {
+            "question": request.query,
+            "answer": response,
+            "timestamp": datetime.now()
+        }
+        await users_collection.update_one(
+            {"_id": user_id_obj},
+            {
+                "$push": {"chatHistory": chat_entry},
+                "$inc": {"totalUsage.chats": 1}
+            }
+        )
+
+        return ChatResponse(success=True, response=response)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 #---------------------------------------------------
+# **Define Pydantic Models for Validation**
+
+
+class QuizQuestion(BaseModel):
+    question: str = Field(..., description="The question text")
+    type: str = Field(..., description="Type of question (e.g., 'multiple choice')")
+    options: List[str] = Field(..., description="List of answer choices")
+    answer: str = Field(..., description="Correct answer")
+    difficulty: str = Field(..., description="Difficulty level (easy, medium, hard)")
+    hints: Optional[List[str]] = Field(default=None, description="Hints for the question")
+
+# Pydantic Schema for Quiz Response
+class QuizResponse(BaseModel):
+    questions: List[QuizQuestion] = Field(..., description="List of generated quiz questions")
+
+# Request Schema
+class QuizRequest(BaseModel):
+    user_id: str = Field(..., description="User ID from the database")
+    num_questions: int = Field(..., description="Number of questions to generate")
+    user_message: str = Field(..., description="User request for quiz customization")
 
 @app.post("/quiz", response_model=QuizResponse)
 async def generate_quiz(request: QuizRequest):
-    """Generates a multiple-choice quiz based on stored documents, in Dwight Schrute’s style."""
-    documents = extracted_docs_store.get(request.user_id)
-    if not documents:
-        raise HTTPException(status_code=400, detail="No documents available. Extract documents first.")
+    """Generates a structured multiple-choice quiz based on stored documents and user request, then saves it in MongoDB."""
+    try:
+        user_id_obj = ObjectId(request.user_id)
 
-    extracted_text = "\n".join(documents.values())
+        # Fetch user data
+        user = await users_collection.find_one({"_id": user_id_obj})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found. Please register first.")
 
-    # Dwight Schrute Quiz Prompt
-    quiz_prompt = [
-        SystemMessage(f"You are Dwight Schrute, the ultimate quizmaster. Generate {request.num_questions} multiple-choice questions based on the following document. The questions should be challenging and prove the test taker's intelligence (or lack thereof). Format the response in JSON."),
-        HumanMessage(f"Document: {extracted_text}")
-    ]
-    response = model.invoke(quiz_prompt)
+        documents = user.get("Docs", {})
+        if not documents:
+            raise HTTPException(status_code=400, detail="No documents found. Upload documents first.")
 
-    return QuizResponse(success=True, quiz=response.content)
+        extracted_text = "\n".join(documents.values())
+
+        # **Quiz Prompt enforcing JSON structure with user_message included**
+        quiz_prompt = [
+            SystemMessage(
+                f"""You are an AI quiz generator. Your task is to generate exactly {request.num_questions} multiple-choice questions.
+                - Each question must follow this JSON format:
+                {{
+                  "questions": [
+                    {{
+                      "question": "What is Schrute Bucks?",
+                      "type": "multiple choice",
+                      "options": ["A currency", "A vegetable", "A spaceship", "A car"],
+                      "answer": "A currency",
+                      "difficulty": "medium",
+                      "hints": ["Used by Dwight in The Office"]
+                    }},
+                    ...exactly {request.num_questions} questions...
+                  ]
+                }}
+                - Ensure that the response contains **exactly {request.num_questions} questions**.
+                - The questions should be based on both the provided document and the user's request.
+                - Avoid generating fewer than {request.num_questions} questions.
+                """
+            ),
+            HumanMessage(f"Document: {extracted_text}"),
+            HumanMessage(f"User Request: {request.user_message}")
+        ]
+
+
+        # Call the model and enforce structured output
+        structured_llm = model.with_structured_output(QuizResponse)
+        quiz_data = structured_llm.invoke(quiz_prompt)
+
+        # Store quiz in MongoDB
+        quiz_entry = {
+            "quiz": quiz_data.dict(),  # Convert Pydantic object to dict
+            "timestamp": datetime.now()
+        }
+        await users_collection.update_one(
+            {"_id": user_id_obj},
+            {
+                "$push": {"quizzesGenerated": quiz_entry},
+                "$inc": {"totalUsage.quizzesGenerated": 1}
+            }
+        )
+
+        return quiz_data  # Directly return Pydantic-validated response
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="LLM returned invalid JSON.")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 #---------------------------------------------------
 

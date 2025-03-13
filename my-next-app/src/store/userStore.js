@@ -3,9 +3,8 @@ import axios from "axios";
 
 const API_BASE_URL = "http://localhost:8000";
 
-const useUserStore = create((set) => ({
+const useUserStore = create((set, get) => ({
   user: null,
-  // Available Models
   availableModels: [],
   selectedModel: null,
 
@@ -22,16 +21,39 @@ const useUserStore = create((set) => ({
 
   // ------------ API Actions ------------ //
 
-  saveUser: (userData) => set({
-     user: userData 
-  }),
+  saveUser: (userData) => set({ user: userData }),
+
   logout: async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    set({ user: null });
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      set({
+        user: null,
+        selectedModel: null,
+        extractedDocs: {},
+        summary: "",
+        keyPoints: [],
+        chatHistory: [],
+        quizData: null,
+      });
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   },
 
+  fetchUserDetails: async () => {
+    const user = get().user;
+    if (!user) return console.error("No user found");
 
-  // Get Available Models
+    try {
+      const response = await axios.get(`${API_BASE_URL}/user/${user.id}`);
+      set({ user: response.data.user_details });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      throw error;
+    }
+  },
+
   fetchModels: async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/models`);
@@ -44,15 +66,21 @@ const useUserStore = create((set) => ({
     }
   },
 
-  // Change LLM Model
-  changeModel: async (user_id, model_id) => {
+  changeModel: async (model_id) => {
+    const user = get().user;
+    if (!user) return console.error("No user found");
+
     try {
       const response = await axios.post(`${API_BASE_URL}/change-model`, {
-        user_id,
+        user_id: user.id,
         model_id,
       });
 
-      set({ selectedModel: response.data.user_details.model_id });
+      set({
+        selectedModel: response.data.user_details.model_id,
+        user: response.data.user_details,
+      });
+
       return response.data;
     } catch (error) {
       console.error("Error changing model:", error);
@@ -60,11 +88,13 @@ const useUserStore = create((set) => ({
     }
   },
 
-  // Delete Model
-  deleteModel: async (user_id) => {
+  deleteModel: async () => {
+    const user = get().user;
+    if (!user) return console.error("No user found");
+
     try {
       const response = await axios.delete(`${API_BASE_URL}/delete-model`, {
-        data: { user_id },
+        data: { user_id: user.id },
       });
 
       set({ selectedModel: null });
@@ -75,10 +105,12 @@ const useUserStore = create((set) => ({
     }
   },
 
-  // Extract Text from Documents
-  extractText: async (user_id, docs) => {
+  extractText: async (docs) => {
+    const user = get().user;
+    if (!user) return console.error("No user found");
+
     try {
-      const response = await axios.post(`${API_BASE_URL}/extract`, { user_id, docs });
+      const response = await axios.post(`${API_BASE_URL}/extract`, { user_id: user.id, docs });
 
       set({
         extractedDocs: docs,
@@ -93,10 +125,12 @@ const useUserStore = create((set) => ({
     }
   },
 
-  // Chat with Documents
-  chatWithDocuments: async (user_id, query) => {
+  chatWithDocuments: async (query) => {
+    const user = get().user;
+    if (!user) return console.error("No user found");
+
     try {
-      const response = await axios.post(`${API_BASE_URL}/chat`, { user_id, query });
+      const response = await axios.post(`${API_BASE_URL}/chat`, { user_id: user.id, query });
 
       const chatEntry = { question: query, answer: response.data.response };
       set((state) => ({
@@ -110,11 +144,13 @@ const useUserStore = create((set) => ({
     }
   },
 
-  // Generate Quiz
-  generateQuiz: async (user_id, num_questions = 10) => {
+  generateQuiz: async (num_questions = 10) => {
+    const user = get().user;
+    if (!user) return console.error("No user found");
+
     try {
       const response = await axios.post(`${API_BASE_URL}/quiz`, {
-        user_id,
+        user_id: user.id,
         num_questions,
       });
 

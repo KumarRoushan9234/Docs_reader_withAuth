@@ -12,6 +12,7 @@ const Navbar = () => {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
+  console.log("user data : ",user);
   useEffect(() => {
     const fetchUser = async () => {
       try {

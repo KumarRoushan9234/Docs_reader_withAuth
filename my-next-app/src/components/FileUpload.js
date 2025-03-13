@@ -1,18 +1,21 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
 import { toast } from "react-hot-toast";
 import { FaUpload, FaFileAlt, FaTrashAlt, FaSpinner } from "react-icons/fa";
+import useUserStore from "@/store/userStore"; // Import Zustand store
+import axios from "axios";
 
 export default function FileUpload() {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [extractedText, setExtractedText] = useState(null);
-  const [summary, setSummary] = useState(null);
-  const [keyPoints, setKeyPoints] = useState(null);
+
+  // Zustand Store
+  const { extractText, summary, keyPoints, extractedDocs } = useUserStore();
+
   const fileInputRef = useRef(null);
 
+  // Handle pasting files
   useEffect(() => {
     const handlePaste = (event) => {
       if (event.clipboardData.files.length > 0) {
@@ -24,11 +27,13 @@ export default function FileUpload() {
     return () => window.removeEventListener("paste", handlePaste);
   }, []);
 
+  // Handle file selection
   const handleFileChange = (event) => {
     const newFiles = Array.from(event.target.files);
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
   };
 
+  // Handle drag and drop
   const handleDrop = (event) => {
     event.preventDefault();
     const droppedFiles = Array.from(event.dataTransfer.files);
@@ -37,37 +42,50 @@ export default function FileUpload() {
 
   const handleDragOver = (event) => event.preventDefault();
 
+  // Remove selected file
   const handleRemoveFile = (index) => {
     setFiles(files.filter((_, i) => i !== index));
   };
 
+  // Handle file upload and text extraction
   const handleUpload = async () => {
-    if (files.length === 0) return toast.error("Please upload at least one file.");
+    if (files.length === 0) {
+      toast.error("Please upload at least one file.");
+      return;
+    }
+
     setLoading(true);
     toast.loading("Processing files...");
+    console.log("🚀 Uploading files:", files);
 
     const formData = new FormData();
     files.forEach((file) => formData.append("file", file));
 
     try {
+      // Step 1: Upload files to API and extract text
+      console.log("📤 Sending files to API for extraction...");
       const extractResponse = await axios.post("/api/extract-text", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      console.log("✅ Extracted response:", extractResponse.data.data);
       const extractedData = extractResponse.data.data;
-      setExtractedText(extractedData);
+
+      if (!extractedData || Object.keys(extractedData).length === 0) {
+        throw new Error("No extracted text found.");
+      }
+
       toast.dismiss();
       toast.success("Text extracted successfully!");
 
-      const llmResponse = await axios.post("http://127.0.0.1:8000/extract", {
-        documents: extractedData,
-      });
+      // Step 2: Call Zustand's `extractText` function to process the extracted text
+      console.log("🔄 Calling extractText() from Zustand store...");
+      await extractText(extractedData);
 
-      setSummary(llmResponse.data.summary);
-      setKeyPoints(llmResponse.data["key points"]);
+      console.log("🎯 Extraction complete. Summary & Key Points updated in store.");
       toast.success("Summary & key points generated!");
     } catch (error) {
-      console.error("❌ Error:", error);
+      console.error("❌ Error during extraction:", error);
       toast.error("Failed to process files. Try again!");
     } finally {
       setLoading(false);
@@ -80,6 +98,7 @@ export default function FileUpload() {
         <FaUpload className="text-blue-500" /> Upload Files
       </h2>
 
+      {/* Drag and Drop or Click to Upload */}
       <div
         onClick={() => fileInputRef.current.click()}
         onDrop={handleDrop}
@@ -93,6 +112,7 @@ export default function FileUpload() {
         <input type="file" multiple ref={fileInputRef} onChange={handleFileChange} className="hidden" />
       </div>
 
+      {/* Display Selected Files */}
       {files.length > 0 && (
         <div className="mt-4 p-3 bg-gray-100 rounded shadow">
           <h3 className="text-lg font-medium mb-2">Files to Upload:</h3>
@@ -110,6 +130,7 @@ export default function FileUpload() {
         </div>
       )}
 
+      {/* Upload Button */}
       <button
         onClick={handleUpload}
         disabled={files.length === 0 || loading}
@@ -120,6 +141,7 @@ export default function FileUpload() {
         {loading ? <><FaSpinner className="animate-spin" /> Processing...</> : <><FaUpload /> Upload & Extract</>}
       </button>
 
+      {/* Display Summary & Key Points */}
       {summary && keyPoints && (
         <div className="mt-6 p-4 bg-gray-100 border rounded shadow">
           <h3 className="text-lg font-medium mb-2">Summary:</h3>
@@ -133,6 +155,14 @@ export default function FileUpload() {
           </ul>
         </div>
       )}
+
+      {/* Debugging Logs */}
+      <div className="mt-4 p-3 text-xs text-gray-600 bg-gray-200 rounded">
+        <strong>Debug Logs:</strong>
+        <pre className="overflow-x-auto text-gray-800">
+          {JSON.stringify({ extractedDocs, summary, keyPoints }, null, 2)}
+        </pre>
+      </div>
     </div>
   );
 }
