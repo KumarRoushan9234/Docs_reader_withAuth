@@ -36,13 +36,13 @@ const Sidebar = () => {
         <div className="border-t border-gray-300 my-3"></div>
 
         {/* Logout */}
-        <button
+        {/* <button
           onClick={() => console.log("Logout")}
           className="flex items-center text-gray-700 hover:bg-gray-200 p-2 rounded-lg w-full"
         >
           <IoLogOut className="text-xl" />
           {isOpen && <span className="ml-3">Logout</span>}
-        </button>
+        </button> */}
       </nav>
     </div>
   );

@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from app.models import DocumentRequest, SummaryResponse
 from app.dependencies import model
-from app.file_storage import save_documents, load_documents
+from backend_fast.app.schemas import save_documents, load_documents
 
 router = APIRouter(prefix="/extract", tags=["Extraction"])
 

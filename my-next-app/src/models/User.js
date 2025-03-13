@@ -8,7 +8,8 @@ const UserSchema = new mongoose.Schema(
 
     // 🔹 Store documents as a key-value object instead of an array
     Docs: { type: Map, of: String, default: {} },
-
+    summary:{},
+    key_points:{},
     model_id: { type: String, default: "llama-3.1-8b-instant" },
 
     chatHistory: [

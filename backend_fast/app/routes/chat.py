@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.models import ChatRequest, ChatResponse
 from app.dependencies import model
-from app.file_storage import load_documents
+from backend_fast.app.schemas import load_documents
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 

@@ -5,8 +5,8 @@ from pydantic import BaseModel, Field
 # ------------------------------ Pydantic Models ------------------------------ #
 
 class DocumentRequest(BaseModel):
-    """Request model for document extraction."""
-    documents: Dict[str, str] = Field(..., description="Dictionary of document IDs and text.")
+    user_id: str
+    documents: Dict[str, str]  # Dictionary of document ID to text
 
 class ChatRequest(BaseModel):
     """Request model for chatting with stored documents."""
@@ -34,4 +34,5 @@ class QuizResponse(BaseModel):
 
 class ModelChangeRequest(BaseModel):
     """Request model to change the active LLM model."""
-    model_id: str = Field(..., description="The new model ID to switch to.")
+    user_id: str
+    model_id: str

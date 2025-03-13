@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.models import QuizRequest, QuizResponse
 from app.dependencies import model
-from app.file_storage import load_documents
+from backend_fast.app.schemas import load_documents
 
 router = APIRouter(prefix="/quiz", tags=["Quiz"])
 
