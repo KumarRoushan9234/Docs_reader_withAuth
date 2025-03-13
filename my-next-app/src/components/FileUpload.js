@@ -11,7 +11,7 @@ export default function FileUpload() {
   const [loading, setLoading] = useState(false);
 
   // Zustand Store
-  const { extractText, summary, keyPoints, extractedDocs } = useUserStore();
+  const { UpdateDocs, summary, keyPoints, extractedDocs } = useUserStore();
 
   const fileInputRef = useRef(null);
 
@@ -80,9 +80,9 @@ export default function FileUpload() {
   
       // Step 2: Send extracted text to FastAPI `/extract` endpoint
       console.log("🔄 Sending extracted text to /extract API...");
-      const extractTextResponse = await extractText(extractedData);
+      const UpdateDocsResponse = await UpdateDocs(extractedData);
   
-      if (extractTextResponse) {
+      if (UpdateDocsResponse) {
         console.log("🎯 Extraction complete. Summary & Key Points updated in store.");
         toast.success("Summary & key points generated!");
       }

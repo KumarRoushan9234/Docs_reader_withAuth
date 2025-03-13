@@ -163,7 +163,7 @@ async def extract_text(data: ExtractRequest):
 
 #---------------------------------------------------
 
-@app.post("/chat", response_model=ChatResponse)
+@app.post("/chatdocs", response_model=ChatResponse)
 async def chat_with_documents(request: ChatRequest):
     """Chat with stored documents and save chat history in MongoDB."""
     try:

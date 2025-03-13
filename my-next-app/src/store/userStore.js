@@ -74,7 +74,7 @@ const useUserStore = create((set, get) => ({
     }
   },
 
-  extractText: async (docs) => {
+  UpdateDocs: async (docs) => {
     const user = get().user;
     if (!user) return console.error("🚨 No user found!");
   
@@ -127,12 +127,28 @@ const useUserStore = create((set, get) => ({
     }
   },
 
+  fetchChatHistory: async () => {
+    const user = get().user;
+    if (!user) return console.error("No user found");
+  
+    try {
+      const response = await axios.get("/api/history");
+      if (response.data.success) {
+        set({ chatHistory: response.data.chatHistory });
+      } else {
+        console.error("Failed to fetch chat history:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching chat history:", error);
+    }
+  },  
+
   chatWithDocuments: async (query) => {
     const user = get().user;
     if (!user) return console.error("No user found");
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/chat`, { user_id: user.id, query });
+      const response = await axios.post(`${API_BASE_URL}/chatdocs`, { user_id: user.id, query });
 
       const chatEntry = { question: query, answer: response.data.response };
 
