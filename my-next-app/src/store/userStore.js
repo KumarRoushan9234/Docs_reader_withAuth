@@ -15,6 +15,8 @@ const useUserStore = create(
       extractedDocs: {},
       summary: "",
       keyPoints: [],
+      flashcards:"",
+      study_guide:"",
 
       // Chat History
       chatHistory: [],
@@ -92,16 +94,28 @@ const useUserStore = create(
             user_id: String(user.id), // Ensure it's a string
             docs: docs || {}, // Ensure docs is an object
           });
+          console.log("response : ",response);
+          if (response.data.success) {
+            console.log("Extract API response:", response.data);
+            set({
+              extractedDocs: response.data.data.documents,
+              summary: response.data.chapter_summary,
+              keyPoints: response.data.data.key_points,
+              flashcards:response.data.data.flashcards,
+              study_guide:response.data.data.study_guide
+            });
+            // console.log("guide : ", response.data.data.study_guide);
 
-          console.log("✅ Extract API response:", response.data);
+          } else {
+            console.error("Failed to update documents:", response.data.message);
+          }
+          // set({
+          //   extractedDocs: docs,
+          //   summary: response.data.summary,
+          //   keyPoints: response.data.key_points,
+          // });
 
-          set({
-            extractedDocs: docs,
-            summary: response.data.summary,
-            keyPoints: response.data.key_points,
-          });
-
-          return response.data;
+          // return response.data;
         } catch (error) {
           console.error("❌ Error extracting text:", error.response?.data || error);
           throw error;
@@ -143,6 +157,22 @@ const useUserStore = create(
         }
       },
 
+      clearChatHistory: async () => {
+        const user = get().user;
+        if (!user) return console.error("No user found");
+
+        try {
+          const response = await axios.get("/api/history");
+          if (response.data.success) {
+            set({ chatHistory: response.data.chatHistory });
+          } else {
+            console.error("Failed to fetch chat history:", response.data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching chat history:", error);
+        }
+      },
+
       chatWithDocuments: async (query) => {
         const user = get().user;
         if (!user) return console.error("No user found");
@@ -166,6 +196,7 @@ const useUserStore = create(
         }
       },
     }),
+    
     {
       name: "user-storage", // Key in local storage
       getStorage: () => localStorage, // Use localStorage

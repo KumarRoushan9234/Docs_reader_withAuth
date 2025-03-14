@@ -118,7 +118,6 @@ class ExtractRequest(BaseModel):
 @app.post("/extract")
 async def extract_text(data: ExtractRequest):
     try:
-        # Convert user_id to ObjectId
         user_oid = ObjectId(data.user_id)
 
         # Find user in DB
@@ -126,36 +125,74 @@ async def extract_text(data: ExtractRequest):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        # Update Docs
+        # Store new extracted docs
         new_docs = data.docs
-        extracted_text = "\n".join(new_docs.values())  # Merge docs for LLM input
+        extracted_text = "\n".join(new_docs.values())
 
-        # Generate Summary
+        # 1️⃣ **Generate Chapter-wise Summary**
         summary_prompt = [
-            SystemMessage("Summarize the following document text."),
+            SystemMessage(
+                """Summarize the following document into chapters with proper headings and structured formatting. 
+                Each chapter should have a clear title and well-explained points."""
+            ),
             HumanMessage(extracted_text)
         ]
-        summary = model.invoke(summary_prompt).content
+        chapter_summary = model.invoke(summary_prompt).content
 
-        # Extract Key Points
+        # 2️⃣ **Extract Key Points**
         key_point_prompt = [
-            SystemMessage("Extract key points from the document in bullet points."),
+            SystemMessage("Extract key points in bullet points for quick revision."),
             HumanMessage(extracted_text)
         ]
         key_points = model.invoke(key_point_prompt).content.split("\n")
 
-        # Update MongoDB
+        # 3️⃣ **Generate Flashcards**
+        flashcard_prompt = [
+            SystemMessage(
+                """Generate flashcards from the document. Each flashcard should have:
+                - A Question
+                - An Answer
+                Format the response as JSON."""
+            ),
+            HumanMessage(extracted_text)
+        ]
+        flashcards = model.invoke(flashcard_prompt).content
+
+        # 4️⃣ **Create a Study Guide**
+        study_guide_prompt = [
+            SystemMessage(
+                """Create a structured study guide with:
+                - Chapter-wise notes
+                - Key formulas (if applicable)
+                - Important takeaways."""
+            ),
+            HumanMessage(extracted_text)
+        ]
+        study_guide = model.invoke(study_guide_prompt).content
+
+        # **Store Everything in MongoDB**
         await users_collection.update_one(
             {"_id": user_oid},
-            {"$set": {"Docs": new_docs, "summary": summary, "key_points": key_points}}
+            {"$set": {
+                "Docs": new_docs,
+                "chapter_summary": chapter_summary,
+                "key_points": key_points,
+                "flashcards": flashcards,
+                "study_guide": study_guide
+            }}
         )
 
-        # Return response
+        # **Return Everything in Proper Format**
         return {
             "success": True,
-            "message": "Documents updated successfully",
-            "summary": summary,
-            "key_points": key_points
+            "message": "Documents processed successfully",
+            "data": {
+                "documents": new_docs,
+                "chapter_summary": chapter_summary,
+                "key_points": key_points,
+                "flashcards": flashcards,
+                "study_guide": study_guide
+            }
         }
 
     except Exception as e:

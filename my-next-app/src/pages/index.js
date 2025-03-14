@@ -1,4 +1,4 @@
-import FileUpload from "@/components/FileUpload";
+import FileUpload from "@/components/file/FileUpload";
 import ChatBox from "@/components/ChatBox";
 
 function Home() {

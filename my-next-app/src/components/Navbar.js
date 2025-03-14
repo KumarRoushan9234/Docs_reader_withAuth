@@ -9,6 +9,7 @@ import useUserStore from "@/store/userStore";
 
 const Navbar = () => {
   const { user, saveUser, logout } = useUserStore(); // Zustand Store
+  // console.log("summary : ",summary);
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
