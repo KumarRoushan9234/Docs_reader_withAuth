@@ -1,45 +1,50 @@
 "use client";
 
 import { useState } from "react";
-import {
-  FaLayerGroup,
-  FaGraduationCap,
-  FaFileAlt,
-  FaStickyNote,
-  FaUpload,
-} from "react-icons/fa";
+import { FaLayerGroup, FaGraduationCap, FaFileAlt, FaStickyNote, FaUpload, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import useUserStore from "@/store/userStore";
 import FileUpload from "@/components/file/FileUpload";
 
-export default function FileNavbar() {
-  const [activeTab, setActiveTab] = useState("summary"); 
+export default function FileNavbar({ isLeftHidden, setIsLeftHidden }) {
+  const [activeTab, setActiveTab] = useState("summary");
   const { extractedDocs, summary, keyPoints, flashcards, study_guide } = useUserStore();
 
   return (
-    <div className="p-4 mx-auto bg-white text-black rounded-lg shadow-lg h-full flex flex-col">
-      {/* Tab Navigation - Responsive */}
-      <div className="flex overflow-x-auto bg-gray-200 rounded-lg p-2">
-        {[
-          { key: "fileupload", label: "Upload", icon: <FaUpload /> },
-          { key: "flashcards", label: "Flashcards", icon: <FaLayerGroup /> },
-          { key: "studyguide", label: "Study Guide", icon: <FaGraduationCap /> },
-          { key: "summary", label: "Summary", icon: <FaFileAlt /> },
-          { key: "notes", label: "Notes", icon: <FaStickyNote /> },
-        ].map(({ key, label, icon }) => (
-          <button
-            key={key}
-            onClick={() => setActiveTab(key)}
-            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all 
-              ${activeTab === key ? "bg-black text-white" : "text-gray-600 hover:bg-gray-300"}
-            `}
-          >
-            {icon} {label}
-          </button>
-        ))}
+    <div className="p-3 bg-white text-black rounded-lg shadow-lg h-full flex flex-col">
+      {/* Tab Navigation with Toggle Button */}
+      <div className="flex items-center bg-gray-200 rounded-lg p-1 relative">
+        {/* Toggle Button (Same button toggles open/close) */}
+        <button
+          className="mr-2 bg-gray-300 hover:bg-gray-500 text-white p-2 rounded-full shadow-md transition-all"
+          onClick={() => setIsLeftHidden(!isLeftHidden)}
+        >
+          {isLeftHidden ? <FaChevronRight size={20} /> : <FaChevronLeft size={20} />}
+        </button>
+
+        {/* Tabs */}
+        <div className="flex overflow-x-auto">
+          {[
+            { key: "fileupload", label: "Upload", icon: <FaUpload /> },
+            { key: "flashcards", label: "Flashcards", icon: <FaLayerGroup /> },
+            { key: "studyguide", label: "Study Guide", icon: <FaGraduationCap /> },
+            { key: "summary", label: "Summary", icon: <FaFileAlt /> },
+            { key: "notes", label: "Notes", icon: <FaStickyNote /> },
+          ].map(({ key, label, icon }) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all 
+                ${activeTab === key ? "bg-black text-white" : "text-gray-600 hover:bg-gray-300"}
+              `}
+            >
+              {icon} {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Dynamic Content Sections */}
-      <div className="mt-4 flex-1 overflow-auto p-4 border rounded-md bg-gray-100">
+      <div className="mt-3 flex-1 overflow-y-auto scroll-smooth p-4 border rounded-md bg-gray-100">
         {activeTab === "fileupload" && <FileUpload />}
         {activeTab === "flashcards" && <Flashcards flashcards={flashcards} />}
         {activeTab === "studyguide" && <StudyGuide study_guide={study_guide} />}

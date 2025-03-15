@@ -5,7 +5,7 @@ import { toast } from "react-hot-toast";
 import { FaUpload, FaFileAlt, FaTrashAlt, FaSpinner } from "react-icons/fa";
 import axios from "axios";
 import useUserStore from "@/store/userStore";
-import FileNavbar from "./FileNavabr";
+import FileNavbar from "./FileNavbar";
 
 export default function FileUpload() {
   const [files, setFiles] = useState([]);
