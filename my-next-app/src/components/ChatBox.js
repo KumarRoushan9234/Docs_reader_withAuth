@@ -17,12 +17,10 @@ export default function ChatBox() {
     fetchChatHistory();
   }, []);
 
-  // Smooth scroll to bottom on new messages
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory, streamingMessage]);
 
-  // Streaming effect for AI response
   const streamResponse = async (text) => {
     setStreamingMessage("");
     for (let char of text) {
@@ -31,7 +29,6 @@ export default function ChatBox() {
     }
   };
 
-  // Handle sending message
   const sendMessage = async () => {
     if (!input.trim()) return;
     setLoading(true);
@@ -51,10 +48,9 @@ export default function ChatBox() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full max-w-2xl mx-auto border bg-white shadow-lg">
-
+    <div className="h-screen flex flex-col w-full max-w-2xl mx-auto border bg-white shadow-lg hide-scrollbar">
       {/* 🔹 Fixed Header */}
-      <div className="flex justify-between items-center p-4 border-b bg-gray-100 sticky top-0 z-10 flex-shrink-0">
+      <div className="sticky top-0 flex justify-between items-center p-4 border-b bg-gray-100 z-10">
         <div className="w-[80%] bg-blue-100 text-blue-800 font-semibold p-3 text-sm rounded-md">
           Ask me Anything! ... Welcome Kumar Roushan
         </div>
@@ -67,9 +63,9 @@ export default function ChatBox() {
         </button>
       </div>
 
-      {/* 🔹 Scrollable Chat Messages */}
-      <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-white">
-        {/* Starter Messages */}
+      {/* 🔹 Chat Messages - Scrollable but no visible scrollbar */}
+      <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-white hide-scrollbar">
+
         {chatHistory.length === 0 && !loading && (
           <div className="text-gray-500 text-sm space-y-3">
             <div className="p-3 bg-gray-200 text-gray-800 max-w-[75%] rounded-md">
@@ -81,10 +77,8 @@ export default function ChatBox() {
           </div>
         )}
 
-        {/* Display Chat History */}
         {chatHistory.map((msg, index) => (
           <div key={index} className="flex flex-col space-y-2">
-            {/* User Message */}
             {msg.question && (
               <div className="flex justify-end">
                 <div className="p-3 shadow-md max-w-[75%] bg-blue-500 text-white text-sm rounded-md">
@@ -93,8 +87,6 @@ export default function ChatBox() {
                 </div>
               </div>
             )}
-
-            {/* AI Response */}
             {msg.answer && (
               <div className="flex items-start space-x-2">
                 <MdOutlineSmartToy className="text-gray-500 text-xl" />
@@ -107,7 +99,6 @@ export default function ChatBox() {
           </div>
         ))}
 
-        {/* Streaming Response Animation */}
         {streamingMessage && (
           <div className="flex items-start space-x-2">
             <MdOutlineSmartToy className="text-gray-500 text-xl" />
@@ -118,7 +109,6 @@ export default function ChatBox() {
           </div>
         )}
 
-        {/* Loading Indicator */}
         {loading && !streamingMessage && (
           <div className="flex items-start space-x-2">
             <MdOutlineSmartToy className="text-gray-500 text-xl" />
@@ -132,7 +122,7 @@ export default function ChatBox() {
       </div>
 
       {/* 🔹 Fixed Input Box */}
-      <div className="w-full bg-gray-100 border-t p-2 flex items-center flex-shrink-0">
+      <div className="sticky bottom-0 w-full bg-gray-100 border-t p-2 flex items-center">
         <input
           type="text"
           className="flex-grow p-3 border border-gray-400 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm rounded-md"
@@ -160,7 +150,6 @@ export default function ChatBox() {
           {loading ? "⏳" : <FaPaperPlane />}
         </button>
       </div>
-
     </div>
   );
 }

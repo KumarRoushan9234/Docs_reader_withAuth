@@ -16,7 +16,7 @@ export default function Layout({ children }) {
         </div>
 
         {/* Main Content (No White Space & Proper Alignment) */}
-        <main className="flex-grow h-[calc(100vh-4.4rem)] ml-20 bg-gray-100 overflow-auto">
+        <main className="flex-grow h-[calc(100vh-4.4rem)] ml-20 bg-gray-100 overflow-auto hide-scrollbar">
           {children}
         </main>
       </div>

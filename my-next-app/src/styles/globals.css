@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+/* Hide scrollbar for Webkit (Chrome, Safari) */
+/* Hide scrollbar for Webkit (Chrome, Safari) */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for Firefox */
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar for Internet Explorer and Edge */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+}
+
+
+
 /* .sidebar {
   transition: transform 0.3s ease-in-out;
 }
