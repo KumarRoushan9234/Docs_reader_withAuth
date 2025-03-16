@@ -20,11 +20,9 @@ export default function handler(req, res) {
     switch (language) {
       case "python":
         filePath = path.join(tempDir, "script.py");
-
-        // Inject the input value directly into the Python code as a variable
+        // Inject input into Python code
         const inputCode = `${code}\n\n# Input passed from frontend\ninput_value = ${JSON.stringify(input)}\n\n# Use input_value in place of input()\na = input_value\n`;
         fs.writeFileSync(filePath, inputCode);
-
         command = `python3 ${filePath}`;
         break;
 
@@ -50,17 +48,20 @@ export default function handler(req, res) {
         return res.status(400).json({ error: "Unsupported language" });
     }
 
-    exec(command, { timeout: 10000 }, (error, stdout, stderr) => {  // 10 seconds timeout
+    exec(command, { timeout: 10000 }, (error, stdout, stderr) => {
       fs.unlinkSync(filePath); // Delete temp file
 
       if (error) {
-        console.error(stderr || error.message); // Log the error for debugging
+        if (error.signal === 'SIGTERM') {
+          return res.status(500).json({ output: "Execution timed out." });
+        }
         return res.status(500).json({ output: stderr || error.message });
       }
-      res.status(200).json({ output: stdout });
+
+      res.status(200).json({ output: stdout || stderr });
     });
   } catch (err) {
-    console.error(err.message); // Log any unexpected errors
+    console.error(err.message);
     res.status(500).json({ output: err.message });
   }
 }

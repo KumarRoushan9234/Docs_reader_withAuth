@@ -2,19 +2,23 @@ import { useState } from "react";
 import axios from "axios";
 import Editor from "@monaco-editor/react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import { FaCopy } from "react-icons/fa";  // Importing copy icon
+import { FaCopy } from "react-icons/fa"; // Importing copy icon
 
 export default function Terminal() {
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("python");
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [inputValue, setInputValue] = useState("");  // User input value
+  const [inputValue, setInputValue] = useState(""); // User input value
 
   const runCode = async () => {
     if (loading) return;
+    if (inputValue.trim() === "") {
+      alert("Please provide input for the code to run.");
+      return;
+    }
     setLoading(true);
-    setOutput("Running...");
+    setOutput("Compiling...");
 
     try {
       const response = await axios.post("/api/terminal/run", {
@@ -22,6 +26,8 @@ export default function Terminal() {
         code,
         input: inputValue, // Passing the input as a variable
       });
+
+      // Display the output, including errors or result
       setOutput(response.data.output);
     } catch (error) {
       setOutput(
@@ -101,7 +107,7 @@ export default function Terminal() {
       {/* Output Box */}
       <div
         className="mt-4 p-4 bg-gray-800 rounded-lg min-h-[80px] overflow-x-auto text-sm"
-        style={{ color: typeof output === "string" && output.includes("Error") ? "red" : "lightgreen" }}
+        style={{ color: "lightgreen" }}
       >
         {output || "Output will appear here..."}
       </div>
