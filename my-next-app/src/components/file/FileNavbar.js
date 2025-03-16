@@ -12,8 +12,8 @@ export default function FileNavbar({ isLeftHidden, setIsLeftHidden }) {
   return (
     <div className="p-3 bg-white text-black rounded-lg shadow-lg h-full flex flex-col">
       {/* Tab Navigation with Toggle Button */}
-      <div className="flex items-center bg-gray-200 rounded-lg p-1 relative">
-        {/* Toggle Button (Same button toggles open/close) */}
+      <div className="flex items-center bg-gray-200 rounded-lg p-1">
+        {/* Toggle Button */}
         <button
           className="mr-2 bg-gray-300 hover:bg-gray-500 text-white p-2 rounded-full shadow-md transition-all"
           onClick={() => setIsLeftHidden(!isLeftHidden)}
@@ -43,8 +43,8 @@ export default function FileNavbar({ isLeftHidden, setIsLeftHidden }) {
         </div>
       </div>
 
-      {/* Dynamic Content Sections */}
-      <div className="mt-3 flex-1 overflow-y-auto scroll-smooth p-4 border rounded-md bg-gray-100">
+      {/* Dynamic Content Sections (Fixed Height) */}
+      <div className="mt-3 flex-1 overflow-y-auto p-4 border rounded-md bg-gray-100 h-[calc(100%-3rem)]">
         {activeTab === "fileupload" && <FileUpload />}
         {activeTab === "flashcards" && <Flashcards flashcards={flashcards} />}
         {activeTab === "studyguide" && <StudyGuide study_guide={study_guide} />}
@@ -58,7 +58,7 @@ export default function FileNavbar({ isLeftHidden, setIsLeftHidden }) {
 /* Individual Sections */
 function Flashcards({ flashcards }) {
   return (
-    <div className="p-4 bg-white rounded-lg">
+    <div className="p-4 bg-white rounded-lg h-full overflow-y-auto">
       <h2 className="text-lg font-bold mb-2">📚 Flashcards</h2>
       <p className="text-gray-700">{flashcards || "No flashcards available."}</p>
     </div>
@@ -67,7 +67,7 @@ function Flashcards({ flashcards }) {
 
 function StudyGuide({ study_guide }) {
   return (
-    <div className="p-4 bg-white rounded-lg">
+    <div className="p-4 bg-white rounded-lg h-full overflow-y-auto">
       <h2 className="text-lg font-bold mb-2">🎓 Study Guide</h2>
       <p className="text-gray-700">{study_guide || "No study guide available."}</p>
     </div>
@@ -76,7 +76,7 @@ function StudyGuide({ study_guide }) {
 
 function Summary({ extractedDocs, summary, keyPoints }) {
   return (
-    <div className="p-4 bg-white rounded-lg">
+    <div className="p-4 bg-white rounded-lg h-full overflow-y-auto">
       <h2 className="text-lg font-bold mb-2">📖 Summary</h2>
       <p className="text-gray-700">{summary || "No summary available."}</p>
       <h3 className="mt-4 text-md font-semibold">Key Points:</h3>
@@ -91,7 +91,7 @@ function Summary({ extractedDocs, summary, keyPoints }) {
 
 function Notes() {
   return (
-    <div className="p-4 bg-white rounded-lg">
+    <div className="p-4 bg-white rounded-lg h-full overflow-y-auto">
       <h2 className="text-lg font-bold mb-2">📝 Notes</h2>
       <p className="text-gray-500">No notes available.</p>
     </div>

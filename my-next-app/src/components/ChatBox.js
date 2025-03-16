@@ -18,7 +18,10 @@ export default function ChatBox() {
   }, []);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Scroll only when a new message is added, not on initial render
+    if (chatHistory.length > 0 || streamingMessage) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [chatHistory, streamingMessage, loading]);
 
   const streamResponse = async (text) => {

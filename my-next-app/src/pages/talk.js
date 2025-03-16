@@ -1,42 +1,35 @@
-import { useState, useEffect } from "react";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+"use client";
+
+import { useState } from "react";
 import FileNavbar from "@/components/file/FileNavbar";
 import ChatBox from "@/components/ChatBox";
 
 export default function TalkPage() {
-  const [isMobile, setIsMobile] = useState(false);
   const [isLeftHidden, setIsLeftHidden] = useState(false);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   return (
-    <div className={`flex ${isMobile ? "flex-col" : "flex-row"} h-screen bg-gray-100 relative`}>
-      {/* Left Panel (Chat) */}
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+      {/* Left Panel (Chat Section) */}
       <div
-        className={`p-4 bg-white shadow-lg flex flex-col transition-all duration-300 overflow-hidden relative ${
-          isLeftHidden ? "w-0 overflow-hidden" : "flex-[2]"
+        className={`transition-all duration-300 ${
+          isLeftHidden ? "w-0 hidden" : "w-2/5"
         }`}
       >
         {!isLeftHidden && (
-          <div className="flex-1 bg-gray-100 p-4 border rounded-md overflow-y-auto scroll-smooth">
-            <ChatBox />
+          <div className="h-full flex flex-col bg-white shadow-md">
+            <div className="flex-1 overflow-auto">
+              <ChatBox />
+            </div>
           </div>
         )}
       </div>
 
-      {/* Right Panel */}
-      <div className="bg-white shadow-lg flex flex-col flex-[3] overflow-auto relative transition-all">
-        <div className="p-3">
-          <FileNavbar isLeftHidden={isLeftHidden} setIsLeftHidden={setIsLeftHidden} />
-        </div>
+      {/* Divider */}
+      {!isLeftHidden && <div className="w-[2px] bg-gray-300 h-full"></div>}
+
+      {/* Right Panel (Main Content) */}
+      <div className="flex-1 h-full flex flex-col bg-white overflow-auto">
+        <FileNavbar isLeftHidden={isLeftHidden} setIsLeftHidden={setIsLeftHidden} />
       </div>
     </div>
   );
