@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import Editor from "@monaco-editor/react";
 
 export default function Terminal() {
   const [code, setCode] = useState("");
@@ -8,31 +9,33 @@ export default function Terminal() {
   const [loading, setLoading] = useState(false);
 
   const runCode = async () => {
+    if (loading) return; // Prevent double submission
     setLoading(true);
     setOutput("Running...");
 
     try {
-      const response = await axios.post("/api/run", {
-        language,
-        code,
-      });
+      const response = await axios.post("/api/terminal/run", { language, code });
       setOutput(response.data.output);
     } catch (error) {
-      setOutput("Error: " + (error.response?.data?.output || "Could not execute code."));
+      setOutput(
+        <span style={{ color: "red" }}>
+          Error: {error.response?.data?.output || "Could not execute code."}
+        </span>
+      );
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="flex-1 bg-black text-white p-4 rounded-lg shadow-md">
+    <div className="flex flex-col bg-gray-900 text-white p-6 rounded-lg shadow-md w-full max-w-3xl mx-auto">
       {/* Header */}
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">🖥️ Code Terminal</h2>
         <select
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
-          className="bg-gray-800 text-white p-1 rounded-md"
+          className="bg-gray-800 text-white p-2 rounded-md border border-gray-600"
         >
           <option value="python">Python</option>
           <option value="javascript">JavaScript</option>
@@ -41,25 +44,38 @@ export default function Terminal() {
         </select>
       </div>
 
-      {/* Code Input */}
-      <textarea
+      {/* Code Editor */}
+      <Editor
+        height="300px"
+        theme="vs-dark"
+        language={language}
         value={code}
-        onChange={(e) => setCode(e.target.value)}
-        className="w-full h-40 bg-gray-900 text-white p-3 rounded-lg text-sm font-mono"
-        placeholder="Write your code here..."
-      ></textarea>
+        onChange={(value) => setCode(value)}
+        options={{
+          fontSize: 16,
+          minimap: { enabled: false },
+          scrollBeyondLastLine: false,
+          wordWrap: "on",
+          automaticLayout: true,
+        }}
+      />
 
       {/* Run Button */}
       <button
         onClick={runCode}
-        className="mt-3 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2"
+        className="mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2"
         disabled={loading}
       >
         {loading ? "Running..." : "🚀 Run Code"}
       </button>
 
-      {/* Output */}
-      <pre className="mt-4 bg-gray-800 p-3 rounded-lg text-sm overflow-x-auto">{output}</pre>
+      {/* Output Box */}
+      <div
+        className="mt-4 p-4 bg-gray-800 rounded-lg min-h-[80px] overflow-x-auto text-sm"
+        style={{ color: typeof output === "string" && output.includes("Error") ? "red" : "lightgreen" }}
+      >
+        {output || "Output will appear here..."}
+      </div>
     </div>
   );
 }

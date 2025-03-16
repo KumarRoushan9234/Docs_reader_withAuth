@@ -49,10 +49,14 @@ export default function handler(req, res) {
     exec(command, { timeout: 5000 }, (error, stdout, stderr) => {
       fs.unlinkSync(filePath); // Delete temp file
 
-      if (error) return res.status(500).json({ output: stderr || error.message });
+      if (error) {
+        console.error(stderr || error.message); // Log the error for debugging
+        return res.status(500).json({ output: stderr || error.message });
+      }
       res.status(200).json({ output: stdout });
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err.message); // Log any unexpected errors
+    res.status(500).json({ output: err.message });
   }
 }

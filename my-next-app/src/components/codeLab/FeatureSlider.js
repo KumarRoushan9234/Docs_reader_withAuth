@@ -45,7 +45,7 @@ export default function FeatureSlider() {
 
   return (
     <div
-      className="relative w-full max-w-screen-lg mx-auto mt-6"
+      className="relative w-full max-w-6xl mx-auto max-w-screen-lg mx-auto mt-6"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
