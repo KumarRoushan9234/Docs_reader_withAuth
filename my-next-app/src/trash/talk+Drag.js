@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaGripLinesVertical, FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import FileNavbar from "@/components/file/FileNavbar";
-import ChatBox from "@/components/ChatBox";
+import FileNavbar from "@/components/lexi/FileNavbar";
+import ChatBox from "@/components/lexi/ChatBox";
 
 export default function TalkPage() {
   const [leftSize, setLeftSize] = useState(400);
@@ -106,3 +106,5 @@ export default function TalkPage() {
 {/* <SidebarItem icon={<MdLibraryBooks />} text="ResourceHub" link="/resourcehub" /> */}
 
 {/* <SidebarItem icon={<FaChartBar />} text="PerformanceTracker" link="/performancetracker" /> */}
+
+{/* <SidebarItem icon={<MdHistory />} text="Activity Log" link="/activity" active={pathname === "/activity"} /> */}

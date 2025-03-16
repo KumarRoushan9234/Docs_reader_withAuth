@@ -1,7 +1,7 @@
-import TalkPage from "./talk";
+import Lexi from "./lexi";
 
 function Home() {
-  return <TalkPage />;
+  return <Lexi />;
 }
 
 Home.auth = true; // ✅ Requires authentication

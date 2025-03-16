@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import FileNavbar from "@/components/file/FileNavbar";
-import ChatBox from "@/components/ChatBox";
+import FileNavbar from "@/components/lexi/FileNavbar";
+import ChatBox from "@/components/lexi/ChatBox";
 
-export default function TalkPage() {
+export default function Lexi() {
   const [isLeftHidden, setIsLeftHidden] = useState(false);
 
   return (

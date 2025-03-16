@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FaLayerGroup, FaGraduationCap, FaFileAlt, FaStickyNote, FaUpload, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import useUserStore from "@/store/userStore";
-import FileUpload from "@/components/file/FileUpload";
+import FileUpload from "@/components/lexi/FileUpload";
 
 export default function FileNavbar({ isLeftHidden, setIsLeftHidden }) {
   const [activeTab, setActiveTab] = useState("summary");
