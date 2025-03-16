@@ -8,7 +8,7 @@ export default function TalkPage() {
   const [isLeftHidden, setIsLeftHidden] = useState(false);
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] w-full overflow-hidden">
       {/* Left Panel (Chat Section) */}
       <div
         className={`transition-all duration-300 ${
@@ -28,7 +28,7 @@ export default function TalkPage() {
       {!isLeftHidden && <div className="w-[2px] bg-gray-300 h-full"></div>}
 
       {/* Right Panel (Main Content) */}
-      <div className="flex-1 h-full flex flex-col bg-white overflow-auto">
+      <div className="flex-1 h-full flex flex-col bg-white overflow-hidden">
         <FileNavbar isLeftHidden={isLeftHidden} setIsLeftHidden={setIsLeftHidden} />
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import useUserStore from "@/store/userStore";
-import { FaPaperPlane, FaTrashAlt, FaTimes } from "react-icons/fa";
+import { FaPaperPlane, FaTimes, FaTrash } from "react-icons/fa";
 import { MdOutlineSmartToy } from "react-icons/md";
 
 export default function ChatBox() {
@@ -17,21 +17,21 @@ export default function ChatBox() {
     fetchChatHistory();
   }, []);
 
+  // Smooth scroll to bottom on new messages
   useEffect(() => {
-    // Scroll only when a new message is added, not on initial render
-    if (chatHistory.length > 0 || streamingMessage) {
-      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [chatHistory, streamingMessage, loading]);
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatHistory, streamingMessage]);
 
+  // Streaming effect for AI response
   const streamResponse = async (text) => {
     setStreamingMessage("");
-    for (let i = 0; i < text.length; i++) {
+    for (let char of text) {
       await new Promise((resolve) => setTimeout(resolve, 20));
-      setStreamingMessage((prev) => prev + text[i]);
+      setStreamingMessage((prev) => prev + char);
     }
   };
 
+  // Handle sending message
   const sendMessage = async () => {
     if (!input.trim()) return;
     setLoading(true);
@@ -51,29 +51,54 @@ export default function ChatBox() {
   };
 
   return (
-    <div className="flex flex-col h-[85vh] max-h-[650px] w-full max-w-2xl mx-auto border rounded-xl bg-white shadow-lg overflow-hidden">
-      <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-gray-50">
+    <div className="flex flex-col h-screen w-full max-w-2xl mx-auto border bg-white shadow-lg">
+
+      {/* 🔹 Fixed Header */}
+      <div className="flex justify-between items-center p-4 border-b bg-gray-100 sticky top-0 z-10 flex-shrink-0">
+        <div className="w-[80%] bg-blue-100 text-blue-800 font-semibold p-3 text-sm rounded-md">
+          Ask me Anything! ... Welcome Kumar Roushan
+        </div>
+        <button
+          onClick={clearChatHistory}
+          className="p-2 text-gray-500 hover:text-red-500 transition-all"
+          title="Clear Chat"
+        >
+          <FaTrash />
+        </button>
+      </div>
+
+      {/* 🔹 Scrollable Chat Messages */}
+      <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-white">
+        {/* Starter Messages */}
         {chatHistory.length === 0 && !loading && (
-          <div className="text-gray-500 text-center mt-20 text-sm animate-pulse">
-            Start a conversation...
+          <div className="text-gray-500 text-sm space-y-3">
+            <div className="p-3 bg-gray-200 text-gray-800 max-w-[75%] rounded-md">
+              Welcome to the chat! Ask me anything. I may not always be right, but your feedback will help me improve!
+            </div>
+            <div className="p-3 bg-gray-200 text-gray-800 max-w-[75%] rounded-md">
+              This is a platform where you can ask questions and receive clear, structured answers on various topics, including <b>Big Data, Apache Hive</b>, and more.
+            </div>
           </div>
         )}
 
+        {/* Display Chat History */}
         {chatHistory.map((msg, index) => (
           <div key={index} className="flex flex-col space-y-2">
+            {/* User Message */}
             {msg.question && (
               <div className="flex justify-end">
-                <div className="p-3 rounded-xl shadow-md max-w-[75%] bg-blue-500 text-white text-sm">
+                <div className="p-3 shadow-md max-w-[75%] bg-blue-500 text-white text-sm rounded-md">
                   {msg.question}
-                  <div className="text-xs text-gray-300 mt-1 text-right">You</div>
+                  <div className="text-xs text-gray-200 mt-1 text-right">You</div>
                 </div>
               </div>
             )}
 
+            {/* AI Response */}
             {msg.answer && (
               <div className="flex items-start space-x-2">
                 <MdOutlineSmartToy className="text-gray-500 text-xl" />
-                <div className="p-3 rounded-xl shadow-md max-w-[75%] bg-gray-200 text-gray-800 text-sm">
+                <div className="p-3 shadow-md max-w-[75%] bg-gray-200 text-gray-800 text-sm rounded-md">
                   {msg.answer}
                   <div className="text-xs text-gray-500 mt-1">AI</div>
                 </div>
@@ -82,20 +107,22 @@ export default function ChatBox() {
           </div>
         ))}
 
+        {/* Streaming Response Animation */}
         {streamingMessage && (
           <div className="flex items-start space-x-2">
             <MdOutlineSmartToy className="text-gray-500 text-xl" />
-            <div className="p-3 rounded-xl bg-gray-200 text-gray-800 text-sm animate-pulse">
+            <div className="p-3 bg-gray-200 text-gray-800 text-sm rounded-md animate-pulse">
               {streamingMessage}
               <span className="text-gray-500 font-bold">|</span>
             </div>
           </div>
         )}
 
+        {/* Loading Indicator */}
         {loading && !streamingMessage && (
           <div className="flex items-start space-x-2">
             <MdOutlineSmartToy className="text-gray-500 text-xl" />
-            <div className="p-3 rounded-xl bg-gray-200 text-gray-600 italic animate-pulse">
+            <div className="p-3 bg-gray-200 text-gray-500 italic animate-pulse rounded-md">
               Typing...
             </div>
           </div>
@@ -104,10 +131,11 @@ export default function ChatBox() {
         <div ref={chatEndRef} />
       </div>
 
-      <div className="flex items-center border-t bg-white p-2">
+      {/* 🔹 Fixed Input Box */}
+      <div className="w-full bg-gray-100 border-t p-2 flex items-center flex-shrink-0">
         <input
           type="text"
-          className="flex-grow p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+          className="flex-grow p-3 border border-gray-400 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm rounded-md"
           placeholder="Type a message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -116,14 +144,14 @@ export default function ChatBox() {
         />
         {input && (
           <button
-            className="ml-2 p-2 rounded-lg text-gray-500 hover:text-gray-700 transition-all"
+            className="ml-2 p-2 text-gray-500 hover:text-gray-400 transition-all"
             onClick={() => setInput("")}
           >
             <FaTimes />
           </button>
         )}
         <button
-          className={`ml-2 px-4 py-2 rounded-lg text-white text-sm transition-all ${
+          className={`ml-2 px-4 py-2 text-white text-sm transition-all rounded-md ${
             input.trim() ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
           }`}
           onClick={sendMessage}
@@ -131,13 +159,8 @@ export default function ChatBox() {
         >
           {loading ? "⏳" : <FaPaperPlane />}
         </button>
-        <button
-          className="ml-2 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm flex items-center gap-1"
-          onClick={clearChatHistory}
-        >
-          <FaTrashAlt className="text-sm" />
-        </button>
       </div>
+
     </div>
   );
 }
