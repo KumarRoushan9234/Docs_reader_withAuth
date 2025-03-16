@@ -11,7 +11,7 @@ export default function Layout({ children }) {
 
       <div className="flex flex-1 pt-[4.4rem]">
         {/* Sidebar (Fixed & Full Height) */}
-        <div className="w-[64px] h-[calc(100vh-4.3rem)] fixed left-0 top-[4.4rem] bg-white shadow-md">
+        <div className="w-[64px] z-50 h-[calc(100vh-4.3rem)] fixed left-0 top-[4.4rem] bg-white shadow-md">
           <Sidebar />
         </div>
 

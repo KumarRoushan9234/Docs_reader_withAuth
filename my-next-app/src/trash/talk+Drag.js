@@ -99,3 +99,10 @@ export default function TalkPage() {
     </div>
   );
 }
+
+
+
+
+{/* <SidebarItem icon={<MdLibraryBooks />} text="ResourceHub" link="/resourcehub" /> */}
+
+{/* <SidebarItem icon={<FaChartBar />} text="PerformanceTracker" link="/performancetracker" /> */}

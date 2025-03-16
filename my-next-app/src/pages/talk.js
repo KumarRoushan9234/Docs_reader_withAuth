@@ -8,10 +8,10 @@ export default function TalkPage() {
   const [isLeftHidden, setIsLeftHidden] = useState(false);
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] w-full overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] w-full overflow-hidden hide-scrollbar">
       {/* Left Panel (Chat Section) */}
       <div
-        className={`transition-all duration-300 ${
+        className={` hide-scrollbar transition-all duration-300 ${
           isLeftHidden ? "w-0 hidden" : "w-2/5"
         }`}
       >

@@ -1,47 +1,45 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { FiUsers, FiActivity, FiSettings } from "react-icons/fi";
-import { MdOutlineQrCodeScanner, MdOutlineBusiness } from "react-icons/md";
-import { BsLayoutSidebarInsetReverse, BsLayoutSidebarInset } from "react-icons/bs";
+import { FiSettings } from "react-icons/fi";
+import { SiChatbot } from "react-icons/si";
+import { MdOutlineSubject, MdQuiz, MdHistory, MdCode } from "react-icons/md";
+import { FaTasks, FaBrain, FaInfoCircle } from "react-icons/fa";
 
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
-    <div
-      className={`h-full ${isOpen ? "w-64" : "w-20"} 
-      bg-white/40 backdrop-blur-md shadow-lg p-4 transition-all duration-300 
-      flex flex-col justify-between relative border-r border-gray-300`}
-    >
-      {/* Sidebar Toggle Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="absolute -right-4 top-5 bg-gray-300 text-gray-700 p-2 rounded-full shadow-md md:hidden"
-      >
-        {isOpen ? <BsLayoutSidebarInset /> : <BsLayoutSidebarInsetReverse />}
-      </button>
-
+    <div className="h-screen w-20 bg-white/40 backdrop-blur-md shadow-lg p-4 flex flex-col border-r border-gray-300">
       {/* Sidebar Links */}
-      <nav className="space-y-2">
-        <SidebarItem isOpen={isOpen} icon={<MdOutlineBusiness />} text="My Business" link="/" />
-        <SidebarItem isOpen={isOpen} icon={<MdOutlineQrCodeScanner />} text="Generate QR" link="/generate-qr" />
-        <SidebarItem isOpen={isOpen} icon={<FiUsers />} text="Check-In Requests" link="/request" />
-        <SidebarItem isOpen={isOpen} icon={<FiActivity />} text="Activity Log" link="/activity" />
-        <SidebarItem isOpen={isOpen} icon={<FiSettings />} text="Settings" link="/settings" />
+      <nav className="space-y-4 flex-grow">
+        <SidebarItem icon={<SiChatbot />} text="SmartDocs" link="/" />
+        <SidebarItem icon={<MdOutlineSubject />} text="CourseHub" link="/coursehub" />
+        <SidebarItem icon={<MdQuiz />} text="QuizMaster" link="/quizmaster" />
+        <SidebarItem icon={<FaTasks />} text="StudyPlanner" link="/studyplanner" />
+        <SidebarItem icon={<MdCode />} text="CodeLab" link="/codelab" />
+        <SidebarItem icon={<MdHistory />} text="Activity Log" link="/activity" />
+        <SidebarItem icon={<FaBrain />} text="AI Tutor" link="/aitutor" />
       </nav>
+
+      {/* Divider Line */}
+      <hr className="border-gray-300 my-4" />
+
+      {/* Settings & About Section */}
+      <div className="space-y-4">
+        <SidebarItem icon={<FiSettings />} text="Settings" link="/settings" />
+        <SidebarItem icon={<FaInfoCircle />} text="About" link="/about" />
+      </div>
     </div>
   );
 };
 
-const SidebarItem = ({ isOpen, icon, text, link }) => (
-  <Link
-    href={link}
-    className="flex items-center text-gray-700 hover:bg-gray-300/40 p-3 rounded-lg transition-all duration-200"
-  >
-    <span className="text-xl">{icon}</span>
-    {isOpen && <span className="ml-3 text-gray-900">{text}</span>}
+const SidebarItem = ({ icon, text, link }) => (
+  <Link href={link} className="relative flex items-center text-gray-700 hover:bg-gray-300/40 p-3 rounded-lg transition-all duration-200 group">
+    <span className="text-2xl">{icon}</span>
+
+    {/* Tooltip - Shows Text on Hover */}
+    <span className="absolute left-full ml-3 px-3 py-1 text-sm bg-gray-900 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg whitespace-nowrap">
+      {text}
+    </span>
   </Link>
 );
 

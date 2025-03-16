@@ -9,10 +9,6 @@
 /* Hide scrollbar for Firefox */
 .hide-scrollbar {
   scrollbar-width: none;
-}
-
-/* Hide scrollbar for Internet Explorer and Edge */
-.hide-scrollbar {
   -ms-overflow-style: none;
 }
 
