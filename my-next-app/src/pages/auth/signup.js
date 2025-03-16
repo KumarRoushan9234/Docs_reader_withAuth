@@ -52,7 +52,7 @@ export default function Signup() {
         </button>
         <p className="text-gray-600 text-sm text-center mt-4">
           Already have an account?{" "}
-          <span className="text-blue-600 hover:underline cursor-pointer" onClick={() => router.push("/login")}>
+          <span className="text-blue-600 hover:underline cursor-pointer" onClick={() => router.push("/auth/login")}>
             Log in
           </span>
         </p>

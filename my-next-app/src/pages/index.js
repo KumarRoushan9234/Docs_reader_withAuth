@@ -1,4 +1,4 @@
-import Lexi from "./lexi";
+import Lexi from "./lexi/lexi";
 
 function Home() {
   return <Lexi />;
