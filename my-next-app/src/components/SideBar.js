@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FiSettings } from "react-icons/fi";
-import { SiChatbot } from "react-icons/si";
+import { RiUserCommunityFill } from "react-icons/ri";
 import { MdOutlineSubject, MdQuiz, MdHistory, MdCode } from "react-icons/md";
 import { FaTasks, FaBrain, FaInfoCircle } from "react-icons/fa";
 
@@ -24,6 +24,8 @@ const Sidebar = () => {
 
         <SidebarItem icon={<FaTasks />} text="StudyPlanner" link="/studyplanner" active={pathname === "/studyplanner"} />
 
+        <SidebarItem icon={<RiUserCommunityFill />} text="Community" link="/community" active={pathname === "/community"} />
+
         {/* Divider Line */}
         <hr className="border-gray-300 my-3" />
 
@@ -42,16 +44,18 @@ const SidebarItem = ({ icon, text, link, active }) => (
       ${active ? "bg-gray-500 text-white font-semibold" : "hover:bg-gray-300/40"}
     `}
   >
+    {/* Icon */}
     <span className="text-xl">{icon}</span>
 
-    {/* Tooltip - Shows Text on Hover */}
-    <span className="absolute left-full ml-3 px-3 py-1 text-sm bg-gray-700 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg whitespace-nowrap">
+    {/* Tooltip - Now inside Link to make it clickable */}
+    <span className="absolute left-full ml-3 px-3 py-1 text-sm bg-gray-700 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg whitespace-nowrap pointer-events-none">
       {text}
     </span>
 
-    {/* Left border indicator for active item */}
+    {/* Active Indicator */}
     {active && <span className="absolute left-0 h-full w-1 bg-gray-500 rounded-r-lg"></span>}
   </Link>
 );
+
 
 export default Sidebar;

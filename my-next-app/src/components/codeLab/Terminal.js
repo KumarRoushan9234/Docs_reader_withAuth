@@ -1,44 +1,36 @@
 import { useState } from "react";
 
 export default function Terminal() {
-  const [code, setCode] = useState("// Write your code here...");
-  const [language, setLanguage] = useState("javascript");
+  const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
 
   const runCode = () => {
-    setOutput("Running code...\n(Feature: Backend execution pending)");
+    setOutput("Running code... (Simulated output)");
   };
 
   return (
-    <div className="p-4 bg-gray-900 text-white rounded-lg h-[400px] flex flex-col">
-      {/* Language Selector & Buttons */}
-      <div className="flex justify-between mb-2">
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          className="bg-gray-700 p-2 rounded-md"
-        >
-          <option value="javascript">JavaScript</option>
-          <option value="python">Python</option>
-          <option value="cpp">C++</option>
+    <div className="flex-1 bg-black text-white p-4 rounded-lg shadow-md">
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-lg">Terminal</h2>
+        <select className="bg-gray-800 text-white p-1 rounded-md">
+          <option>Python</option>
+          <option>JavaScript</option>
+          <option>C++</option>
         </select>
-        <div>
-          <button onClick={runCode} className="bg-green-600 px-3 py-1 rounded-md mr-2">▶ Run</button>
-          <button className="bg-blue-500 px-3 py-1 rounded-md">✅ Test Cases</button>
-        </div>
       </div>
 
-      {/* Code Input */}
       <textarea
-        className="flex-grow bg-gray-800 text-white p-2 rounded-md"
         value={code}
         onChange={(e) => setCode(e.target.value)}
-      />
+        className="w-full h-32 bg-gray-900 text-white p-2 rounded-lg"
+        placeholder="Write your code here..."
+      ></textarea>
 
-      {/* Output Display */}
-      <div className="bg-black p-2 mt-2 h-[100px] rounded-md">
-        <pre className="text-green-400">{output}</pre>
-      </div>
+      <button onClick={runCode} className="mt-3 px-4 py-2 bg-blue-500 text-white rounded-lg">
+        Run Code
+      </button>
+
+      <pre className="mt-4 bg-gray-800 p-2 rounded-lg">{output}</pre>
     </div>
   );
 }
