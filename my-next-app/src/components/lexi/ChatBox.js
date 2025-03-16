@@ -48,8 +48,8 @@ export default function ChatBox() {
   };
 
   return (
-    <div className="h-screen flex flex-col w-full max-w-2xl mx-auto border bg-white shadow-lg rounded-lg">
-      {/* 🔹 Chat Header */}
+    <div className="h-full flex flex-col w-full max-w-2xl mx-auto border bg-white shadow-lg rounded-lg">
+      {/* 🔹 Sticky Chat Header */}
       <div className="sticky top-0 flex justify-between items-center p-4 border-b bg-gray-100 z-10 shadow-md">
         <div className="w-[80%] bg-blue-100 text-blue-800 font-semibold p-3 text-sm rounded-md">
           Welcome, Kumar Roushan! Ask me anything.
@@ -122,7 +122,7 @@ export default function ChatBox() {
         <div ref={chatEndRef} />
       </div>
 
-      {/* 🔹 Input Box */}
+      {/* 🔹 Sticky Input Box */}
       <div className="sticky bottom-0 w-full bg-gray-100 border-t p-2 flex items-center">
         <input
           type="text"
@@ -134,10 +134,7 @@ export default function ChatBox() {
           disabled={loading}
         />
         {input && (
-          <button
-            className="ml-2 p-2 text-gray-500 hover:text-gray-400 transition-all"
-            onClick={() => setInput("")}
-          >
+          <button className="ml-2 p-2 text-gray-500 hover:text-gray-400 transition-all" onClick={() => setInput("")}>
             <FaTimes />
           </button>
         )}
