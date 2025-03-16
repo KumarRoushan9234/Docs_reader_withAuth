@@ -35,6 +35,7 @@
     "pptx2html": "^0.3.4",
     "pptxgenjs": "^3.12.0",
     "react": "^19.0.0",
+    "react-copy-to-clipboard": "^5.1.0",
     "react-doc-viewer": "^0.1.14",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",

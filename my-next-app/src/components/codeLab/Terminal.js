@@ -1,21 +1,27 @@
 import { useState } from "react";
 import axios from "axios";
 import Editor from "@monaco-editor/react";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import { FaCopy } from "react-icons/fa";  // Importing copy icon
 
 export default function Terminal() {
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("python");
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [inputValue, setInputValue] = useState(""); // For user input
+  const [inputValue, setInputValue] = useState("");  // User input value
 
   const runCode = async () => {
-    if (loading) return; // Prevent double submission
+    if (loading) return;
     setLoading(true);
     setOutput("Running...");
 
     try {
-      const response = await axios.post("/api/terminal/run", { language, code, input: inputValue });
+      const response = await axios.post("/api/terminal/run", {
+        language,
+        code,
+        input: inputValue, // Passing the input as a variable
+      });
       setOutput(response.data.output);
     } catch (error) {
       setOutput(
@@ -46,31 +52,40 @@ export default function Terminal() {
       </div>
 
       {/* Code Editor */}
-      <Editor
-        height="300px"
-        theme="vs-dark"
-        language={language}
-        value={code}
-        onChange={(value) => setCode(value)}
-        options={{
-          fontSize: 16,
-          minimap: { enabled: false },
-          scrollBeyondLastLine: false,
-          wordWrap: "on",
-          automaticLayout: true,
-        }}
-      />
+      <div className="relative">
+        <Editor
+          height="300px"
+          theme="vs-dark"
+          language={language}
+          value={code}
+          onChange={(value) => setCode(value)}
+          options={{
+            fontSize: 16,
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            wordWrap: "on",
+            automaticLayout: true,
+          }}
+        />
+        <CopyToClipboard text={code}>
+          <button
+            className="absolute top-2 right-2 p-2 bg-gray-700 hover:bg-gray-600 rounded-full"
+            title="Copy Code"
+          >
+            <FaCopy className="text-white" />
+          </button>
+        </CopyToClipboard>
+      </div>
 
-      {/* User Input Section */}
+      {/* Input for the code */}
       <div className="mt-4">
-        <label htmlFor="userInput" className="text-sm">Enter Input:</label>
+        <label className="text-sm">Enter Input:</label>
         <input
           type="text"
-          id="userInput"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          className="mt-2 p-2 w-full bg-gray-800 text-white rounded-md border border-gray-600"
-          placeholder="Enter input for the program (e.g., 5)"
+          className="w-full p-2 bg-gray-800 text-white border border-gray-600 rounded-md"
+          placeholder="Enter input for the program"
         />
       </div>
 
@@ -85,15 +100,10 @@ export default function Terminal() {
 
       {/* Output Box */}
       <div
-        className="mt-4 p-4 bg-gray-800 rounded-lg min-h-[80px] max-h-[300px] overflow-auto text-sm"
-        style={{
-          color: typeof output === "string" && output.includes("Error") ? "red" : "lightgreen",
-          border: "2px solid", 
-          borderColor: typeof output === "string" && output.includes("Error") ? "red" : "lightgreen",
-          borderRadius: "10px",
-        }}
+        className="mt-4 p-4 bg-gray-800 rounded-lg min-h-[80px] overflow-x-auto text-sm"
+        style={{ color: typeof output === "string" && output.includes("Error") ? "red" : "lightgreen" }}
       >
-        <pre>{output || "Output will appear here..."}</pre>
+        {output || "Output will appear here..."}
       </div>
     </div>
   );

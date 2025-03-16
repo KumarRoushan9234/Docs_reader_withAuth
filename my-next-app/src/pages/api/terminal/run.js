@@ -2,12 +2,10 @@ import { exec } from "child_process";
 import fs from "fs";
 import path from "path";
 
-// timeout (for infinite loop) | import os off and other dangerous functions offf | 
-
 export default function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
-  const { language, code } = req.body;
+  const { language, code, input } = req.body;
 
   if (!language || !code) {
     return res.status(400).json({ error: "Missing language or code" });
@@ -22,7 +20,11 @@ export default function handler(req, res) {
     switch (language) {
       case "python":
         filePath = path.join(tempDir, "script.py");
-        fs.writeFileSync(filePath, code);
+
+        // Inject the input value directly into the Python code as a variable
+        const inputCode = `${code}\n\n# Input passed from frontend\ninput_value = ${JSON.stringify(input)}\n\n# Use input_value in place of input()\na = input_value\n`;
+        fs.writeFileSync(filePath, inputCode);
+
         command = `python3 ${filePath}`;
         break;
 
@@ -48,7 +50,7 @@ export default function handler(req, res) {
         return res.status(400).json({ error: "Unsupported language" });
     }
 
-    exec(command, { timeout: 5000 }, (error, stdout, stderr) => {
+    exec(command, { timeout: 10000 }, (error, stdout, stderr) => {  // 10 seconds timeout
       fs.unlinkSync(filePath); // Delete temp file
 
       if (error) {
