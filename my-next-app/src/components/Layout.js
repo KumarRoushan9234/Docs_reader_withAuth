@@ -9,7 +9,7 @@ export default function Layout({ children }) {
         <Navbar />
       </div>
 
-      <div className="flex flex-1 pt-[4.4rem]">
+      <div className="flex flex-1 pt-[4.7rem]">
         {/* Sidebar */}
         <div className="w-[20px] z-40  fixed  top-[4.4rem] bg-white shadow-md">
           <Sidebar />

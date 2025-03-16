@@ -8,26 +8,20 @@ export default function Lexi() {
   const [isLeftHidden, setIsLeftHidden] = useState(false);
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] w-full overflow-hidden hide-scrollbar">
+    <div className="flex h-screen w-full overflow-hidden">
       {/* Left Panel (Chat Section) */}
-      <div
-        className={` hide-scrollbar transition-all duration-300 ${
-          isLeftHidden ? "w-0 hidden" : "w-2/5"
-        }`}
-      >
+      <div className={`transition-all duration-300 ${isLeftHidden ? "w-0 hidden" : "w-2/5"}`}>
         {!isLeftHidden && (
-          <div className="h-full flex flex-col bg-white shadow-md">
-            <div className="flex-1 overflow-auto">
-              <ChatBox />
-            </div>
+          <div className="h-full flex flex-col bg-white shadow-md border-r border-gray-600">
+            <ChatBox />
           </div>
         )}
       </div>
 
       {/* Divider */}
-      {!isLeftHidden && <div className="w-[2px] bg-gray-300 h-full"></div>}
+      {!isLeftHidden && <div className="w-[2px] bg-gray-800 h-full"></div>}
 
-      {/* Right Panel (Main Content) */}
+      {/* Right Panel (FileNavbar) */}
       <div className="flex-1 h-full flex flex-col bg-white overflow-hidden">
         <FileNavbar isLeftHidden={isLeftHidden} setIsLeftHidden={setIsLeftHidden} />
       </div>

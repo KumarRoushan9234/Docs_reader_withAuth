@@ -48,11 +48,11 @@ export default function ChatBox() {
   };
 
   return (
-    <div className="h-screen flex flex-col w-full max-w-2xl mx-auto border bg-white shadow-lg hide-scrollbar">
-      {/* 🔹 Fixed Header */}
-      <div className="sticky top-0 flex justify-between items-center p-4 border-b bg-gray-100 z-10">
+    <div className="h-screen flex flex-col w-full max-w-2xl mx-auto border bg-white shadow-lg rounded-lg">
+      {/* 🔹 Chat Header */}
+      <div className="sticky top-0 flex justify-between items-center p-4 border-b bg-gray-100 z-10 shadow-md">
         <div className="w-[80%] bg-blue-100 text-blue-800 font-semibold p-3 text-sm rounded-md">
-          Ask me Anything! ... Welcome Kumar Roushan
+          Welcome, Kumar Roushan! Ask me anything.
         </div>
         <button
           onClick={clearChatHistory}
@@ -63,16 +63,15 @@ export default function ChatBox() {
         </button>
       </div>
 
-      {/* 🔹 Chat Messages - Scrollable but no visible scrollbar */}
-      <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-white hide-scrollbar">
-
+      {/* 🔹 Chat Messages */}
+      <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-gray-50 hide-scrollbar">
         {chatHistory.length === 0 && !loading && (
           <div className="text-gray-500 text-sm space-y-3">
-            <div className="p-3 bg-gray-200 text-gray-800 max-w-[75%] rounded-md">
-              Welcome to the chat! Ask me anything. I may not always be right, but your feedback will help me improve!
+            <div className="p-3 bg-gray-200 text-gray-800 max-w-[75%] rounded-md shadow-sm">
+              👋 Welcome! Ask me anything. I may not always be right, but your feedback helps me improve.
             </div>
-            <div className="p-3 bg-gray-200 text-gray-800 max-w-[75%] rounded-md">
-              This is a platform where you can ask questions and receive clear, structured answers on various topics, including <b>Big Data, Apache Hive</b>, and more.
+            <div className="p-3 bg-gray-200 text-gray-800 max-w-[75%] rounded-md shadow-sm">
+              📚 You can ask about topics like **Big Data, Apache Hive**, and more!
             </div>
           </div>
         )}
@@ -81,7 +80,7 @@ export default function ChatBox() {
           <div key={index} className="flex flex-col space-y-2">
             {msg.question && (
               <div className="flex justify-end">
-                <div className="p-3 shadow-md max-w-[75%] bg-blue-500 text-white text-sm rounded-md">
+                <div className="p-3 shadow-md max-w-[75%] bg-gradient-to-br from-blue-500 to-blue-700 text-white text-sm rounded-xl">
                   {msg.question}
                   <div className="text-xs text-gray-200 mt-1 text-right">You</div>
                 </div>
@@ -90,7 +89,7 @@ export default function ChatBox() {
             {msg.answer && (
               <div className="flex items-start space-x-2">
                 <MdOutlineSmartToy className="text-gray-500 text-xl" />
-                <div className="p-3 shadow-md max-w-[75%] bg-gray-200 text-gray-800 text-sm rounded-md">
+                <div className="p-3 shadow-md max-w-[75%] bg-gray-100 text-gray-800 text-sm rounded-xl border border-gray-300">
                   {msg.answer}
                   <div className="text-xs text-gray-500 mt-1">AI</div>
                 </div>
@@ -99,21 +98,23 @@ export default function ChatBox() {
           </div>
         ))}
 
+        {/* 🔹 AI Streaming Response */}
         {streamingMessage && (
           <div className="flex items-start space-x-2">
             <MdOutlineSmartToy className="text-gray-500 text-xl" />
-            <div className="p-3 bg-gray-200 text-gray-800 text-sm rounded-md animate-pulse">
+            <div className="p-3 bg-gray-100 text-gray-800 text-sm rounded-xl border border-gray-300 animate-pulse">
               {streamingMessage}
               <span className="text-gray-500 font-bold">|</span>
             </div>
           </div>
         )}
 
+        {/* 🔹 AI Loading Animation */}
         {loading && !streamingMessage && (
           <div className="flex items-start space-x-2">
             <MdOutlineSmartToy className="text-gray-500 text-xl" />
-            <div className="p-3 bg-gray-200 text-gray-500 italic animate-pulse rounded-md">
-              Typing...
+            <div className="p-3 bg-gray-100 text-gray-500 italic animate-pulse rounded-xl border border-gray-300">
+              Typing<span className="dots">...</span>
             </div>
           </div>
         )}
@@ -121,7 +122,7 @@ export default function ChatBox() {
         <div ref={chatEndRef} />
       </div>
 
-      {/* 🔹 Fixed Input Box */}
+      {/* 🔹 Input Box */}
       <div className="sticky bottom-0 w-full bg-gray-100 border-t p-2 flex items-center">
         <input
           type="text"
