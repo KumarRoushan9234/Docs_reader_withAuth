@@ -7,6 +7,7 @@ export default function Terminal() {
   const [language, setLanguage] = useState("python");
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [inputValue, setInputValue] = useState(""); // For user input
 
   const runCode = async () => {
     if (loading) return; // Prevent double submission
@@ -14,7 +15,7 @@ export default function Terminal() {
     setOutput("Running...");
 
     try {
-      const response = await axios.post("/api/terminal/run", { language, code });
+      const response = await axios.post("/api/terminal/run", { language, code, input: inputValue });
       setOutput(response.data.output);
     } catch (error) {
       setOutput(
@@ -60,6 +61,19 @@ export default function Terminal() {
         }}
       />
 
+      {/* User Input Section */}
+      <div className="mt-4">
+        <label htmlFor="userInput" className="text-sm">Enter Input:</label>
+        <input
+          type="text"
+          id="userInput"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          className="mt-2 p-2 w-full bg-gray-800 text-white rounded-md border border-gray-600"
+          placeholder="Enter input for the program (e.g., 5)"
+        />
+      </div>
+
       {/* Run Button */}
       <button
         onClick={runCode}
@@ -71,10 +85,15 @@ export default function Terminal() {
 
       {/* Output Box */}
       <div
-        className="mt-4 p-4 bg-gray-800 rounded-lg min-h-[80px] overflow-x-auto text-sm"
-        style={{ color: typeof output === "string" && output.includes("Error") ? "red" : "lightgreen" }}
+        className="mt-4 p-4 bg-gray-800 rounded-lg min-h-[80px] max-h-[300px] overflow-auto text-sm"
+        style={{
+          color: typeof output === "string" && output.includes("Error") ? "red" : "lightgreen",
+          border: "2px solid", 
+          borderColor: typeof output === "string" && output.includes("Error") ? "red" : "lightgreen",
+          borderRadius: "10px",
+        }}
       >
-        {output || "Output will appear here..."}
+        <pre>{output || "Output will appear here..."}</pre>
       </div>
     </div>
   );

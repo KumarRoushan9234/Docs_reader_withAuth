@@ -2,6 +2,8 @@ import { exec } from "child_process";
 import fs from "fs";
 import path from "path";
 
+// timeout (for infinite loop) | import os off and other dangerous functions offf | 
+
 export default function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
